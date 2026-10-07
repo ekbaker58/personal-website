@@ -5,7 +5,7 @@
     "hero": {
       "name": "Ethan Baker",
       "headline": "Industrial Engineering @ USF · Formula SAE steering · startup hardware",
-      "location": "Tampa, FL · Columbus, OH",
+      "location": "Columbus, OH · Tampa, FL",
       "lede": "I'm designing the steering for Bulls Racing's next Formula SAE car, consulting on hardware for a student startup, and building party games for my friends in my spare time.",
       "primaryAction": {
         "label": "Drive the timeline",
@@ -74,7 +74,7 @@
       "heading": "About",
       "title": "I like building things that have to work in front of people.",
       "paragraphs": [
-        "I'm Ethan, an Industrial Engineering student at the University of South Florida (Class of 2029). I split my year between Tampa and Columbus, Ohio.",
+        "I'm Ethan, an Industrial Engineering student at the University of South Florida (Class of 2029). I'm from Columbus, Ohio, and I'm in Tampa for school.",
         "I started with robots. In high school I led a three-person team to first place in a robotics competition, and in 2025 a partner and I built a 3-lb combat robot with zero budget, fixed it between matches, and went 4–1 at the National Robotics Challenge.",
         "At USF, I joined Bulls Racing, our Formula SAE team. My first season was fabrication: carbon-fiber pedal faces and a lot of time inside the pedal box. This season I'm designing the steering system for the F27 car, with one goal: make it take less effort to turn the wheel than it did on F26.",
         "I'm also the engineering consultant for syp, a student startup that measures how much athletes actually drink. I came up with how syp tracks a whole team at once, and I pitched it on stage at e-Fest, where we took second place for the Brand Builder Award.",
