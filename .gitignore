@@ -1,0 +1,9 @@
+.DS_Store
+node_modules/
+_old-version-*/
+ethan-site-brief.md
+NOTES.md
+.claude/
+site-content-private.md
+CLAUDE.md
+PLAN.md

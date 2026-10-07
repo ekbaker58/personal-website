@@ -1,0 +1,11 @@
+{
+  "name": "ethan-baker-personal-website",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Ethan Baker's personal website. Plain HTML, CSS and JavaScript, no build step.",
+  "scripts": {
+    "start": "node serve.js",
+    "sync-games": "bash scripts/sync-games.sh",
+    "check": "node scripts/check-site.js"
+  }
+}
