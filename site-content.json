@@ -1,0 +1,630 @@
+{
+  "site": {
+    "title": "Ethan Baker",
+    "description": "Industrial Engineering student at the University of South Florida, designing steering for Bulls Racing and working on startup hardware.",
+    "hero": {
+      "name": "Ethan Baker",
+      "headline": "Industrial Engineering @ USF · Formula SAE steering · startup hardware",
+      "location": "Tampa, FL · Columbus, OH",
+      "lede": "I'm designing the steering for Bulls Racing's next Formula SAE car, consulting on hardware for a student startup, and building party games for my friends in my spare time.",
+      "primaryAction": {
+        "label": "Drive the timeline",
+        "href": "#track"
+      },
+      "secondaryAction": {
+        "label": "Play my games",
+        "href": "#games"
+      }
+    },
+    "navigation": [
+      {
+        "id": "about",
+        "label": "About"
+      },
+      {
+        "id": "track",
+        "label": "Timeline"
+      },
+      {
+        "id": "games",
+        "label": "Games"
+      },
+      {
+        "id": "off-the-clock",
+        "label": "Off the clock"
+      },
+      {
+        "id": "contact",
+        "label": "Contact"
+      }
+    ],
+    "navigationLabel": "Sections",
+    "mobileNavigationLabel": "Section navigation",
+    "stats": {
+      "label": "Results so far",
+      "items": [
+        {
+          "value": "4.0",
+          "label": "GPA, Dean's List",
+          "category": "education"
+        },
+        {
+          "value": "19th of 111",
+          "label": "Bulls Racing at FSAE Michigan 2026 (team result)",
+          "category": "engineering"
+        },
+        {
+          "value": "1 of 20",
+          "label": "U.S. finalists, Alibaba.com CoCreate Pitch 2026, from 39,000+ applicants",
+          "category": "startup"
+        },
+        {
+          "value": "2nd",
+          "label": "Brand Builder Award, e-Fest 2026",
+          "category": "startup"
+        },
+        {
+          "value": "4–1",
+          "label": "Combat robot record, National Robotics Challenge 2025",
+          "category": "engineering"
+        }
+      ]
+    },
+    "about": {
+      "heading": "About",
+      "title": "I like building things that have to work in front of people.",
+      "paragraphs": [
+        "I'm Ethan, an Industrial Engineering student at the University of South Florida (Class of 2029). I split my year between Tampa and Columbus, Ohio.",
+        "I started with robots. In high school I led a three-person team to first place in a robotics competition, and in 2025 a partner and I built a 3-lb combat robot with zero budget, fixed it between matches, and went 4–1 at the National Robotics Challenge.",
+        "At USF, I joined Bulls Racing, our Formula SAE team. My first season was fabrication: carbon-fiber pedal faces and a lot of time inside the pedal box. This season I'm designing the steering system for the F27 car, with one goal: make it take less effort to turn the wheel than it did on F26.",
+        "I'm also the engineering consultant for syp, a student startup that measures how much athletes actually drink. I came up with how syp tracks a whole team at once, and I pitched it on stage at e-Fest, where we took second place for the Brand Builder Award.",
+        "Long-term, I want to lead the engineering team on a sports car, ideally a future Porsche 911. (I'd also bring back the Cayman.)"
+      ],
+      "skillsHeading": "What I work with",
+      "skills": [
+        {
+          "group": "CAD and drafting",
+          "items": [
+            "AutoCAD (2D and 3D drafting, floor plans)",
+            "Fusion 360",
+            "Engineering drawings"
+          ]
+        },
+        {
+          "group": "Fabrication",
+          "items": [
+            "Carbon-fiber parts",
+            "Vehicle assembly",
+            "Automotive 12V wiring"
+          ]
+        },
+        {
+          "group": "Business",
+          "items": [
+            "Pitching to judges",
+            "Corporate outreach"
+          ]
+        },
+        {
+          "group": "Languages",
+          "items": [
+            "English",
+            "Conversational Spanish"
+          ]
+        }
+      ]
+    },
+    "timelineSection": {
+      "heading": "Timeline",
+      "eyebrow": "Experience, projects & milestones",
+      "title": "The track",
+      "intro": "Everything I've done so far, and what's coming up. Scroll down and the car drives it with you. Open any stop for the details.",
+      "filterLabel": "Filter timeline by category",
+      "filters": [
+        {
+          "id": "all",
+          "label": "All"
+        },
+        {
+          "id": "engineering",
+          "label": "Engineering"
+        },
+        {
+          "id": "startup",
+          "label": "Startup"
+        },
+        {
+          "id": "leadership",
+          "label": "Leadership"
+        },
+        {
+          "id": "education",
+          "label": "Education"
+        },
+        {
+          "id": "work",
+          "label": "Work"
+        },
+        {
+          "id": "life",
+          "label": "Life"
+        }
+      ],
+      "showEverythingLabel": "Show everything",
+      "todayLabel": "Today",
+      "countLabelSingular": "milestone",
+      "countLabelPlural": "milestones",
+      "statusLabels": {
+        "done": "Completed",
+        "in-progress": "In progress",
+        "upcoming": "Upcoming"
+      },
+      "startLabel": "Start",
+      "finishLabel": "Finish line",
+      "hudLabel": "Now passing"
+    },
+    "games": {
+      "heading": "Games",
+      "title": "Games I built",
+      "intro": "Five party games for game night. A laptop runs them, a TV shows the big screen, and everyone plays on their own phone. Two of them also run solo, so you can play them right here.",
+      "steps": [
+        {
+          "title": "The laptop hosts",
+          "text": "One command starts every game on my Mac."
+        },
+        {
+          "title": "The TV shows the big screen",
+          "text": "Questions, drawings, races and the leaderboard."
+        },
+        {
+          "title": "Phones are the controllers",
+          "text": "Friends scan a QR code. Nothing to install."
+        }
+      ],
+      "playLabel": "Play",
+      "newTabLabel": "Open in a new tab",
+      "closeLabel": "Close game",
+      "partyOnlyLabel": "Game night only. It needs my laptop and everyone on the same Wi‑Fi.",
+      "items": [
+        {
+          "id": "flappy-flock",
+          "name": "Flappy Flock",
+          "tagline": "Flappy Bird for a room full of phones.",
+          "description": "Everyone shares one leaderboard, earns coins for 21 skins, and can race on the same pipes. The server replays every flight from the taps alone, so nobody can fake a score.",
+          "icon": "games/flappy-flock/icon.svg",
+          "playUrl": "games/flappy-flock/game.html",
+          "soloNote": "Solo mode here. Your scores save on your device.",
+          "category": "startup",
+          "publish": true
+        },
+        {
+          "id": "plinko-32",
+          "name": "Plinko 32",
+          "tagline": "32 buckets, odds tilted toward the player.",
+          "description": "Pick a risk level, set a bet, and drop. It has auto-drop strategies, trophies, ball skins, and at game night a shared leaderboard with chat.",
+          "icon": "games/plinko-32/icon.svg",
+          "playUrl": "games/plinko-32/game.html",
+          "soloNote": "Solo mode here. Play money only, saved on your device.",
+          "category": "life",
+          "publish": true
+        },
+        {
+          "id": "game-night-hub",
+          "name": "Game Night Hub",
+          "tagline": "One profile and one coin wallet for every game.",
+          "description": "Starts all the games with one command, keeps a leaderboard for the whole night, runs side bets, and has Texas Hold'em with a TV poker table.",
+          "icon": "games/game-night-hub/icon.svg",
+          "playUrl": null,
+          "category": "leadership",
+          "publish": true
+        },
+        {
+          "id": "brain-brawl",
+          "name": "Brain Brawl",
+          "tagline": "Party trivia for 6 to 10 friends.",
+          "description": "Trivia, Fibber (fool your friends with a fake answer), Most Likely To, a buzzer Speed Round and a Final Wager.",
+          "icon": "games/brain-brawl/icon.svg",
+          "playUrl": null,
+          "category": "work",
+          "publish": true
+        },
+        {
+          "id": "doodle-telephone",
+          "name": "Doodle Telephone",
+          "tagline": "Write it, draw it, guess it.",
+          "description": "Each idea passes from phone to phone. At the end the TV replays every chain stroke by stroke so the room can watch it fall apart.",
+          "icon": "games/doodle-telephone/icon.svg",
+          "playUrl": null,
+          "category": "education",
+          "publish": true
+        }
+      ]
+    },
+    "offTheClock": {
+      "heading": "Off the clock",
+      "title": "Off the clock",
+      "interests": [
+        {
+          "title": "Cars",
+          "text": "Porsche GT cars, the Cayman most of all. I go to Barrett-Jackson Columbus when I can.",
+          "category": "engineering",
+          "shape": "circle"
+        },
+        {
+          "title": "Watches",
+          "text": "Seiko, and vintage American pocket watches from Hamilton and Gruen. I like learning how they're identified and valued.",
+          "category": "leadership",
+          "shape": "square"
+        },
+        {
+          "title": "Golf",
+          "text": "I caddied for two years at a Top-100 private club, and I've been to the Memorial Tournament at Muirfield Village.",
+          "category": "education",
+          "shape": "flag"
+        },
+        {
+          "title": "Film",
+          "text": "I took film history at USF. After a good movie I go digging into how it was made.",
+          "category": "work",
+          "shape": "triangle"
+        },
+        {
+          "title": "Cooking",
+          "text": "Premium cuts, cooked right. I made wagyu for my birthday.",
+          "category": "life",
+          "shape": "pill"
+        },
+        {
+          "title": "Games",
+          "text": "Clash Royale and Forza Horizon, when I'm not building my own.",
+          "category": "startup",
+          "shape": "diamond"
+        }
+      ],
+      "roots": {
+        "title": "Two time zones",
+        "text": "My family is from Germany. Generations ago they ran a bakery in Fulda, and one ancestor crossed to America alone by boat because the family couldn't afford tickets for everyone. In spring 2027 I'm going to Germany on USF's engineering study abroad program, and I plan to find where that bakery stood.",
+        "home": {
+          "label": "Tampa",
+          "timeZone": "America/New_York"
+        },
+        "away": {
+          "label": "Fulda",
+          "timeZone": "Europe/Berlin"
+        },
+        "watchLabel": "Watch showing the current time in Tampa, with a second hour hand for Fulda, Germany"
+      }
+    },
+    "contact": {
+      "heading": "Contact",
+      "title": "Looking for a Summer 2027 internship",
+      "text": "Industrial engineering, manufacturing, or automation, from May through mid-August.",
+      "links": [
+        {
+          "label": "Email me",
+          "href": "mailto:ekbaker58@gmail.com"
+        },
+        {
+          "label": "LinkedIn",
+          "href": "https://www.linkedin.com/in/ethanbaker585"
+        },
+        {
+          "label": "Resume (PDF)",
+          "href": "resume.pdf"
+        }
+      ]
+    },
+    "education": {
+      "heading": "Education",
+      "degree": "B.S. Industrial Engineering",
+      "institution": "University of South Florida",
+      "classYear": "Class of 2029",
+      "graduation": "May 2029",
+      "gpa": "4.0 GPA",
+      "recognition": "Dean's List"
+    },
+    "controls": {
+      "skipToContent": "Skip to content",
+      "darkTheme": "Dark",
+      "lightTheme": "Light",
+      "printProfile": "Print profile",
+      "themeLabel": "Switch between light and dark"
+    },
+    "footer": "Designed and built by Ethan Baker."
+  },
+  "timeline": [
+    {
+      "id": "roots-fulda",
+      "date": "0000-01",
+      "dateLabel": "Prologue",
+      "dateIsApprox": true,
+      "title": "Family roots in Fulda, Germany",
+      "org": null,
+      "location": "Fulda, Germany",
+      "category": "life",
+      "status": "done",
+      "tier": "extra",
+      "summary": "My family ran a bakery in Fulda, about an hour from Frankfurt. One ancestor crossed to America alone by boat; their siblings stayed behind because the family couldn't afford more tickets.",
+      "details": [],
+      "link": null,
+      "publish": true
+    },
+    {
+      "id": "nrc-2025",
+      "date": "2025-04",
+      "dateLabel": "April 2025",
+      "dateIsApprox": false,
+      "title": "National Robotics Challenge: 8th overall, 4–1 record",
+      "org": "National Robotics Challenge",
+      "location": "Marion, OH",
+      "category": "engineering",
+      "status": "done",
+      "tier": "core",
+      "summary": "A partner and I built a 3-lb beetleweight combat robot with a horizontal spinner. No budget. We repaired it between matches and went 4–1.",
+      "details": [
+        "Hard-plastic chassis with the internals housed inside",
+        "Designed, built, and repaired 50/50 with my partner"
+      ],
+      "link": "projects/nrc-spinner",
+      "publish": true
+    },
+    {
+      "id": "usf-start",
+      "date": "2025-08",
+      "dateLabel": "Fall 2025",
+      "dateIsApprox": true,
+      "title": "Started B.S. in Industrial Engineering",
+      "org": "University of South Florida",
+      "location": "Tampa, FL",
+      "category": "education",
+      "status": "done",
+      "tier": "core",
+      "summary": "4.0 GPA, Dean's List. Expected graduation May 2029.",
+      "details": [],
+      "link": null,
+      "publish": true
+    },
+    {
+      "id": "fsae-join",
+      "date": "2025-09",
+      "dateLabel": "Fall 2025",
+      "dateIsApprox": true,
+      "title": "Joined Bulls Racing (Formula SAE)",
+      "org": "Bulls Racing, USF",
+      "location": "Tampa, FL",
+      "category": "engineering",
+      "status": "done",
+      "tier": "core",
+      "summary": "Driver Interface sub-team: brakes and everything the driver touches. My first season, on the F26 car, was fabrication.",
+      "details": [
+        "Made the carbon-fiber pedal faces for the pedal box",
+        "Installed components and helped with driver adjustments",
+        "Handled pedal-box removal and reinstallation"
+      ],
+      "link": null,
+      "publish": true
+    },
+    {
+      "id": "syp-join",
+      "date": "2026-01",
+      "dateLabel": "Spring 2026",
+      "dateIsApprox": true,
+      "title": "Engineering Consultant, syp",
+      "org": "syp (student hydration-tech startup)",
+      "location": "Tampa, FL",
+      "category": "startup",
+      "status": "in-progress",
+      "tier": "core",
+      "summary": "syp measures how much athletes actually drink. I came up with its team-integration system: RFID wristbands on players plus an antenna in the bottle, so live data shows which athlete drank from which bottle.",
+      "details": [
+        "Drafted the design drawings for syp's multi-size variant (a teammate built the CAD model)",
+        "One of two people who present syp's business plan"
+      ],
+      "link": "projects/syp",
+      "publish": true
+    },
+    {
+      "id": "iise-elected",
+      "date": "2026-02",
+      "dateLabel": "Spring 2026",
+      "dateIsApprox": true,
+      "title": "Elected Corporate Outreach Director",
+      "org": "IISE, USF Student Chapter",
+      "location": "Tampa, FL",
+      "category": "leadership",
+      "status": "in-progress",
+      "tier": "core",
+      "summary": "I bring companies in for the chapter's career panels, day-in-the-life sessions, resume reviews, and mock interviews.",
+      "details": [
+        "Managing the chapter's Six Sigma certification event, October 2026",
+        "Planning a Spring 2027 career fair"
+      ],
+      "link": null,
+      "publish": true
+    },
+    {
+      "id": "efest-2026",
+      "date": "2026-04",
+      "dateLabel": "April 2026",
+      "dateIsApprox": false,
+      "title": "e-Fest: 2nd place, Brand Builder Award",
+      "org": "e-Fest",
+      "location": "Minneapolis, MN",
+      "category": "startup",
+      "status": "done",
+      "tier": "core",
+      "summary": "syp was one of 25 finalist teams. I pitched on stage to the judges, and we took 2nd place for the Brand Builder Award.",
+      "details": [],
+      "link": "projects/syp",
+      "publish": true
+    },
+    {
+      "id": "fsae-michigan-2026",
+      "date": "2026-05",
+      "dateLabel": "May 2026",
+      "dateIsApprox": false,
+      "title": "F26 places 19th of 111 at FSAE Michigan",
+      "org": "Bulls Racing",
+      "location": "Michigan International Speedway, Brooklyn, MI",
+      "category": "engineering",
+      "status": "done",
+      "tier": "core",
+      "summary": "The F26 car I helped fabricate placed 19th out of 111 teams in the official results.",
+      "details": [],
+      "link": null,
+      "publish": true
+    },
+    {
+      "id": "calc3",
+      "date": "2026-06",
+      "dateLabel": "Summer 2026",
+      "dateIsApprox": true,
+      "title": "Took Calculus III over the summer",
+      "org": "Columbus State Community College",
+      "location": "Columbus, OH",
+      "category": "education",
+      "status": "done",
+      "tier": "extra",
+      "summary": "Took Calc III at Columbus State over the summer to stay ahead; the credit transfers to USF.",
+      "details": [],
+      "link": null,
+      "publish": true
+    },
+    {
+      "id": "dashcam",
+      "date": "2026-08",
+      "dateLabel": "August 2026",
+      "dateIsApprox": false,
+      "title": "Garage project: hardwiring a dash cam",
+      "org": null,
+      "location": null,
+      "category": "engineering",
+      "status": "in-progress",
+      "tier": "extra",
+      "summary": "Hardwiring a front-and-rear dash cam into my BMW X6 for parking mode: identifying constant vs. switched circuits in the fuse box, then routing the rear cable across a one-piece liftgate.",
+      "details": [],
+      "link": "projects/dashcam",
+      "publish": true
+    },
+    {
+      "id": "alibaba-cocreate",
+      "date": "2026-09",
+      "dateLabel": "September 2026",
+      "dateIsApprox": false,
+      "title": "Alibaba.com CoCreate Pitch: U.S. finalist",
+      "org": "Alibaba.com CoCreate Pitch 2026",
+      "location": "Los Angeles, CA",
+      "category": "startup",
+      "status": "done",
+      "tier": "core",
+      "summary": "syp was one of 20 U.S. finalists selected from 39,000+ applicants and received the $10,000 finalist award. I worked on our application; the team pitched the final in LA.",
+      "details": [],
+      "link": "projects/syp",
+      "publish": true
+    },
+    {
+      "id": "game-night",
+      "date": "2026-09",
+      "dateLabel": "September 2026",
+      "dateIsApprox": false,
+      "title": "Built five party games for game night",
+      "org": null,
+      "location": null,
+      "category": "engineering",
+      "status": "done",
+      "tier": "core",
+      "summary": "A laptop runs the games, a TV shows the big screen, and friends play on their phones. One hub links them all with a shared profile and coin wallet. Two of them also run solo in the browser, right here on this site.",
+      "details": [
+        "Game Night Hub, Flappy Flock, Brain Brawl, Doodle Telephone and Plinko 32",
+        "Bot tests play full games at high speed to check for crashes, stalls and answer leaks"
+      ],
+      "link": "#games",
+      "publish": true
+    },
+    {
+      "id": "f27-steering",
+      "date": "2026-09",
+      "dateLabel": "Fall 2026",
+      "dateIsApprox": true,
+      "title": "Designing the F27 steering system",
+      "org": "Bulls Racing",
+      "location": "Tampa, FL",
+      "category": "engineering",
+      "status": "in-progress",
+      "tier": "core",
+      "summary": "My first design role on the team. Goal: cut steering effort below the 16 N·m measured on F26.",
+      "details": [
+        "Stiffening the steering-column stabilizer against lateral deflection",
+        "Selecting the column bearings (F26 used press-fit bearings)",
+        "Choosing between a double-Cardan joint and two single U-joints so the column doesn't bind",
+        "Designing for roughly double the 4.44° of deflection measured on F26, for margin"
+      ],
+      "link": "projects/f27-steering",
+      "publish": true
+    },
+    {
+      "id": "bpc-2026",
+      "date": "2026-10",
+      "dateLabel": "October 2, 2026",
+      "dateIsApprox": false,
+      "title": "USF Business Plan Championship",
+      "org": "University of South Florida",
+      "location": "Tampa, FL",
+      "category": "startup",
+      "status": "done",
+      "tier": "core",
+      "summary": "Pitched syp's business plan with a teammate.",
+      "details": [],
+      "link": "projects/syp",
+      "publish": true
+    },
+    {
+      "id": "germany-2027",
+      "date": "2027-03",
+      "dateLabel": "Spring Break 2027",
+      "dateIsApprox": true,
+      "title": "Engineering study abroad in Germany",
+      "org": "USF Education Abroad",
+      "location": "Germany",
+      "category": "education",
+      "status": "upcoming",
+      "tier": "core",
+      "summary": "Accepted to USF's engineering study abroad program in Germany. While I'm there, I plan to find where my family's bakery stood in Fulda.",
+      "details": [],
+      "link": null,
+      "publish": true
+    },
+    {
+      "id": "internship-2027",
+      "date": "2027-05",
+      "dateLabel": "Summer 2027",
+      "dateIsApprox": false,
+      "title": "Open to a Summer 2027 internship",
+      "org": null,
+      "location": null,
+      "category": "work",
+      "status": "upcoming",
+      "tier": "core",
+      "summary": "Looking for an industrial engineering, manufacturing, or automation internship, May through mid-August.",
+      "details": [],
+      "link": "#contact",
+      "publish": true
+    },
+    {
+      "id": "graduation",
+      "date": "2029-05",
+      "dateLabel": "May 2029",
+      "dateIsApprox": false,
+      "title": "Expected graduation: B.S. Industrial Engineering",
+      "org": "University of South Florida",
+      "location": "Tampa, FL",
+      "category": "education",
+      "status": "upcoming",
+      "tier": "core",
+      "summary": "",
+      "details": [],
+      "link": null,
+      "publish": true
+    }
+  ]
+}

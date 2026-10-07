@@ -1,0 +1,2209 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0d26">
+<link rel="icon" href="icon.svg">
+<title>Plinko 32</title>
+<script>
+/* Game Night Hub: when this page was opened from the hub, load its small overlay (🏠 button, wallet, announcements) */
+(function(){try{var q=new URLSearchParams(location.search),hp=q.get('hp'),hc=q.get('hub');if(hp&&/^\d{2,5}$/.test(hp))localStorage.setItem('gnh.port',hp);if(hc&&/^[\w-]{6,40}$/.test(hc))localStorage.setItem('gnh.code',hc);hp=localStorage.getItem('gnh.port');if(!hp)return;var s=document.createElement('script');s.src='http://'+location.hostname+':'+hp+'/overlay.js';s.async=true;s.dataset.game='plinko';s.dataset.compact='narrow';document.head.appendChild(s);}catch(e){}})();
+</script>
+<link rel="stylesheet" href="../../fonts/games.css">
+<style>
+/* Layout: a game-show set at night. The lit Plinko board is center stage under a marquee of bulbs, the control desk
+   sits to its left and the leaderboard/stats rail to its right; on phones the board comes first and a thumb bar docks at the bottom. */
+:root{
+  color-scheme: dark;
+  --night:#0a0d26;
+  --spot:#1d2566;
+  --stage:#121846;
+  --desk:#161d50;
+  --raise:#1d2660;
+  --rail:#2a3479;
+  --ink:#f2f1ff;
+  --muted:#9ea5da;
+  --peg:#dde0ff;
+  --gold:#ffc53d;
+  --gold-2:#f08c00;
+  --hot:#ff4f81;
+  --teal:#3fd9c4;
+  --good:#5ee391;
+  --bad:#ff7a7a;
+  --f-display:"Bungee","Arial Black",Impact,sans-serif;
+  --f-body:"Barlow","Helvetica Neue",Arial,sans-serif;
+  --f-cond:"Barlow Condensed","Arial Narrow","Helvetica Neue",sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{min-height:100%}
+body{
+  margin:0;
+  background-color:var(--night);
+  background-image:radial-gradient(1100px 560px at 55% -12%, var(--spot), transparent 72%);
+  color:var(--ink);
+  font-family:var(--f-body);
+  font-size:15px;
+  line-height:1.4;
+  -webkit-tap-highlight-color:transparent;
+}
+button{font:inherit;color:inherit;cursor:pointer}
+button:disabled{cursor:not-allowed}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+h2,h3{margin:0;font-weight:400}
+
+.app{max-width:1600px;margin:0 auto;padding-inline:16px;padding-block:14px 28px;display:flex;flex-direction:column;gap:14px}
+
+/* ---------- header ---------- */
+.top{display:flex;align-items:center;gap:12px}
+@media (max-width:430px){ .top:has(#gnh-slot:not(:empty)) .logo b{display:none} }   /* room for the Game Night 🏠 button */
+.brand{display:flex;flex-direction:column;gap:3px;min-width:0}
+.logo{font-family:var(--f-display);font-size:28px;line-height:1;letter-spacing:.01em;margin:0;font-weight:400;white-space:nowrap}
+.logo b{color:var(--gold);font-weight:400;margin-left:3px;text-shadow:0 0 16px color-mix(in srgb,var(--gold) 45%,transparent)}
+.tag{color:var(--muted);font-size:13px;letter-spacing:.03em}
+.wallet{margin-left:auto;text-align:right;min-width:0}
+.cap{font-family:var(--f-cond);font-weight:600;text-transform:uppercase;letter-spacing:.14em;font-size:12px;color:var(--muted)}
+.bal{font-family:var(--f-display);font-size:30px;line-height:1.05;color:var(--gold);font-variant-numeric:tabular-nums;white-space:nowrap;
+  text-shadow:0 0 18px color-mix(in srgb,var(--gold) 35%,transparent);transition:color .2s}
+.bal.up{color:var(--good)}
+.bal.down{color:var(--bad)}
+.icon-btn{width:40px;height:40px;border-radius:10px;border:1px solid var(--rail);background:var(--desk);display:grid;place-items:center;flex:none;padding:0}
+.icon-btn svg{width:20px;height:20px}
+.icon-btn:hover{border-color:var(--muted)}
+
+/* ---------- stage grid ---------- */
+.stage{display:grid;grid-template-columns:minmax(0,1fr);grid-template-areas:"board" "desk" "side";gap:16px;align-items:start}
+.board-col{grid-area:board;min-width:0;display:flex;flex-direction:column;gap:10px}
+.desk{grid-area:desk}
+.side{grid-area:side}
+@media (min-width:900px){
+  .stage{grid-template-columns:300px minmax(0,1fr);grid-template-areas:"desk board" "desk side"}
+}
+@media (min-width:1300px){
+  .stage{grid-template-columns:290px minmax(0,1fr) 310px;grid-template-areas:"desk board side"}
+}
+.panel{background:var(--desk);border:1px solid var(--rail);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:16px;min-width:0}
+
+/* ---------- board ---------- */
+.board{
+  position:relative;
+  background:linear-gradient(180deg,var(--stage),color-mix(in srgb,var(--stage) 60%,var(--night)));
+  border:1px solid var(--rail);border-radius:18px;padding:28px 12px 12px;
+  display:flex;justify-content:center;overflow:hidden;
+  transition:border-color .3s, box-shadow .3s;
+}
+.board.flash{border-color:var(--gold);box-shadow:0 0 40px color-mix(in srgb,var(--gold) 30%,transparent)}
+canvas{display:block;max-width:100%}
+#cv{touch-action:manipulation}
+.bulbs{position:absolute;top:10px;left:18px;right:18px;display:flex;justify-content:space-between;pointer-events:none}
+.bulbs i{width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold);opacity:.22;animation:chase 1.4s linear infinite;animation-delay:calc(var(--n) * -.35s);will-change:opacity}
+@keyframes chase{0%,24.9%{opacity:1}25%,100%{opacity:.22}}
+.board.flash .bulbs i{animation:flash .26s linear infinite;animation-delay:0s}
+@keyframes flash{0%,49%{opacity:1}50%,100%{opacity:.25}}
+/* host pranks */
+#cv{transition:transform .6s cubic-bezier(.3,1.4,.5,1), filter .4s}
+#cv.prank-flip{transform:rotate(180deg)}
+#cv.prank-mirror{transform:scaleX(-1)}
+#cv.prank-flip.prank-mirror{transform:rotate(180deg) scaleX(-1)}
+#cv.prank-dark{filter:brightness(.12) saturate(.3)}
+#cv.prank-disco{animation:disco 1.2s linear infinite}
+@keyframes disco{from{filter:hue-rotate(0deg) saturate(1.6)}to{filter:hue-rotate(360deg) saturate(1.6)}}
+
+.tip{position:absolute;z-index:3;transform:translate(-50%,calc(-100% - 12px));background:var(--ink);color:var(--night);
+  padding:8px 11px;border-radius:9px;font-size:13px;line-height:1.35;width:max-content;max-width:min(280px,92%);pointer-events:none;
+  box-shadow:0 8px 24px color-mix(in srgb,var(--night) 60%,transparent)}
+.tip b{font-family:var(--f-cond);font-size:16px}
+.tip span{display:block;color:color-mix(in srgb,var(--night) 70%,var(--ink))}
+
+.toast{position:absolute;z-index:2;top:40px;left:22px;display:flex;flex-direction:column;gap:2px;pointer-events:none;max-width:46%}
+.toast .t1{font-family:var(--f-display);font-size:26px;line-height:1;color:var(--gold);text-shadow:0 0 18px color-mix(in srgb,var(--gold) 50%,transparent)}
+.toast .t2{font-family:var(--f-cond);font-weight:700;font-size:18px;letter-spacing:.04em}
+.toast.show{animation:toast 2.2s ease-out forwards}
+@keyframes toast{0%{opacity:0;transform:translateY(8px) scale(.96)}10%{opacity:1;transform:none}80%{opacity:1}100%{opacity:0;transform:translateY(-6px)}}
+
+.rank-chip{position:absolute;z-index:2;top:34px;right:18px;border:1px solid var(--rail);background:color-mix(in srgb,var(--night) 70%,transparent);
+  border-radius:999px;padding:6px 12px;font-family:var(--f-cond);font-weight:700;font-size:15px;letter-spacing:.03em;display:flex;gap:6px;align-items:center}
+.rank-chip b{color:var(--gold);font-weight:700}
+.rank-chip .live{width:7px;height:7px;border-radius:50%;background:var(--good)}
+.rank-chip.off .live{background:var(--bad)}
+.rank-chip.bump{animation:bump .6s ease-out}
+@keyframes bump{0%{transform:scale(1)}30%{transform:scale(1.18);border-color:var(--gold)}100%{transform:scale(1)}}
+.feed-pop{position:absolute;z-index:2;top:74px;right:18px;max-width:46%;text-align:right;font-family:var(--f-cond);font-weight:700;font-size:16px;pointer-events:none}
+.feed-pop.show{animation:toast 3s ease-out forwards}
+.feed-pop .who{color:var(--gold)}
+
+.boost-chip{position:absolute;z-index:2;top:34px;left:18px;border-radius:999px;padding:6px 12px;font-family:var(--f-cond);font-weight:700;font-size:15px;letter-spacing:.03em;
+  background:var(--hot);color:var(--ink);box-shadow:0 0 22px color-mix(in srgb,var(--hot) 55%,transparent);animation:pulse 1s ease-in-out infinite alternate}
+@keyframes pulse{from{transform:scale(1)}to{transform:scale(1.06)}}
+.board.boosting .toast{top:76px}
+.host-msg{position:absolute;z-index:5;left:50%;top:40%;transform:translate(-50%,-50%);width:min(440px,84%);text-align:center;pointer-events:none;
+  background:var(--ink);color:var(--night);border-radius:18px;padding:16px 20px;box-shadow:0 20px 60px color-mix(in srgb,var(--night) 70%,transparent)}
+.host-msg .cap{color:color-mix(in srgb,var(--night) 60%,var(--ink))}
+.host-msg p{margin:6px 0 0;font-family:var(--f-display);font-size:clamp(17px,2.2vw,24px);line-height:1.2;overflow-wrap:anywhere}
+.host-msg.show{animation:hostIn 4.6s ease-out forwards}
+@keyframes hostIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.7)}8%{opacity:1;transform:translate(-50%,-50%) scale(1.04)}12%{transform:translate(-50%,-50%) scale(1)}85%{opacity:1}100%{opacity:0}}
+.broke{position:absolute;inset:0;z-index:4;display:grid;place-items:center;padding:16px;
+  background:color-mix(in srgb,var(--night) 72%,transparent);backdrop-filter:blur(3px)}
+.broke-card{background:var(--desk);border:1px solid var(--rail);border-radius:16px;padding:22px 24px;text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center;max-width:320px}
+.broke-card h2{font-family:var(--f-display);font-size:22px;color:var(--gold)}
+.broke-card p{margin:0;color:var(--muted)}
+
+.history{display:flex;align-items:center;gap:10px;min-height:30px;padding-inline:4px}
+.history ol{display:flex;gap:6px;list-style:none;margin:0;padding:0;overflow:hidden;flex:1;min-width:0;
+  -webkit-mask-image:linear-gradient(90deg,#000 82%,transparent);mask-image:linear-gradient(90deg,#000 82%,transparent)}
+.history li{flex:none;font-family:var(--f-cond);font-weight:700;font-size:14px;padding:3px 8px;border-radius:6px;font-variant-numeric:tabular-nums;animation:pop .25s ease-out}
+.empty{color:var(--muted);font-size:13px}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+
+/* ---------- controls ---------- */
+.tabs{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;padding:4px;background:var(--night);border:1px solid var(--rail);border-radius:12px}
+.tabs button{border:0;background:none;border-radius:9px;padding:8px 4px;font-weight:700;color:var(--muted);min-width:0;white-space:nowrap}
+.tabs button[aria-selected="true"]{background:var(--raise);color:var(--ink);box-shadow:inset 0 0 0 1px var(--rail)}
+.field{display:flex;flex-direction:column;gap:8px}
+.field-label{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.field-label output,.field-label small{font-family:var(--f-body);text-transform:none;letter-spacing:0;font-size:13.5px;color:var(--ink);font-weight:600}
+.field-label small{color:var(--muted);font-weight:500}
+.bet-row{display:flex;gap:6px}
+.money{display:flex;align-items:center;background:var(--night);border:1px solid var(--rail);border-radius:10px;padding-inline:11px 6px;flex:1;min-width:0}
+.money:focus-within{border-color:var(--gold)}
+.money span{color:var(--muted);font-weight:600}
+.money input{background:none;border:0;color:var(--ink);font:600 18px var(--f-body);width:100%;min-width:0;padding:9px 4px;font-variant-numeric:tabular-nums;outline:none}
+.money.sm input{font-size:15px;padding:7px 4px}
+.chip{flex:none;min-width:42px;padding:0 10px;border-radius:10px;border:1px solid var(--rail);background:var(--night);font-weight:700;font-family:var(--f-cond);font-size:15px}
+.chip:hover{border-color:var(--muted)}
+
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;background:var(--night);border:1px solid var(--rail);border-radius:11px}
+.seg.seg2{grid-template-columns:repeat(2,1fr)}
+.seg.seg4{grid-template-columns:repeat(4,1fr)}
+.seg button{border:0;background:none;border-radius:8px;padding:8px 4px;font-weight:600;color:var(--muted);min-width:0}
+.seg.sm button{padding:6px 2px;font-size:13.5px}
+.seg button[aria-checked="true"]{background:var(--rail);color:var(--ink)}
+.seg button[aria-checked="true"][data-risk="low"]{box-shadow:inset 0 -2px 0 var(--teal)}
+.seg button[aria-checked="true"][data-risk="medium"]{box-shadow:inset 0 -2px 0 var(--gold)}
+.seg button[aria-checked="true"][data-risk="high"]{box-shadow:inset 0 -2px 0 var(--hot)}
+.seg button:disabled{opacity:.5}
+.odds{margin:0;font-size:13.5px;color:var(--muted)}
+.odds b{color:var(--ink);font-variant-numeric:tabular-nums}
+.limit-note{margin:0;font-size:12.5px;color:var(--muted)}
+
+.drop{
+  font-family:var(--f-display);font-size:21px;letter-spacing:.02em;width:100%;
+  background:linear-gradient(180deg,var(--gold),var(--gold-2));color:var(--night);
+  border:0;border-radius:13px;padding:15px 12px;
+  box-shadow:0 5px 0 color-mix(in srgb,var(--gold-2) 55%,var(--night)),0 12px 28px color-mix(in srgb,var(--gold) 22%,transparent);
+  transition:transform .06s, box-shadow .06s, filter .15s;
+}
+.drop:active:not(:disabled){transform:translateY(3px);box-shadow:0 2px 0 color-mix(in srgb,var(--gold-2) 55%,var(--night))}
+.drop:disabled{filter:grayscale(.85) brightness(.6);font-size:16px}
+.drop.stop{background:linear-gradient(180deg,var(--hot),color-mix(in srgb,var(--hot) 70%,var(--night)));color:var(--ink);
+  box-shadow:0 5px 0 color-mix(in srgb,var(--hot) 45%,var(--night)),0 12px 28px color-mix(in srgb,var(--hot) 22%,transparent)}
+.hint{margin:0;text-align:center;font-size:12.5px;color:var(--muted)}
+kbd{font-family:var(--f-cond);font-weight:700;border:1px solid var(--rail);border-bottom-width:2px;border-radius:5px;padding:0 5px;color:var(--ink);white-space:nowrap}
+@media (hover:none){.hint{display:none}}
+.auto-status{margin:0;text-align:center;font-family:var(--f-cond);font-weight:700;font-size:15px;color:var(--muted)}
+.auto-status.on{color:var(--gold)}
+input[type=range]{width:100%;accent-color:var(--gold)}
+.num{width:92px;background:var(--night);border:1px solid var(--rail);border-radius:10px;color:var(--ink);font:600 16px var(--f-body);padding:8px 10px;font-variant-numeric:tabular-nums}
+.num:focus{outline:none;border-color:var(--gold)}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.row > span{color:var(--muted);font-size:13.5px}
+
+.adv{border:1px solid var(--rail);border-radius:12px;background:color-mix(in srgb,var(--night) 50%,var(--desk))}
+.adv summary{cursor:pointer;padding:11px 12px;font-weight:700;display:flex;justify-content:space-between;gap:8px;list-style:none}
+.adv summary::-webkit-details-marker{display:none}
+.adv summary::after{content:"+";color:var(--muted);font-weight:700}
+.adv[open] summary::after{content:"–"}
+.adv summary small{color:var(--gold);font-weight:600;font-size:13px;margin-left:auto}
+.adv-body{padding:2px 12px 14px;display:flex;flex-direction:column;gap:14px}
+.rule{display:grid;grid-template-columns:minmax(0,1fr) 84px;gap:6px 8px;align-items:center}
+.rule .cap{grid-column:1 / -1}
+.pct{display:flex;align-items:center;gap:4px;background:var(--night);border:1px solid var(--rail);border-radius:10px;padding-inline:8px}
+.pct input{width:100%;min-width:0;background:none;border:0;color:var(--ink);font:600 15px var(--f-body);padding:7px 0;outline:none;font-variant-numeric:tabular-nums}
+.pct span{color:var(--muted)}
+.pct:focus-within{border-color:var(--gold)}
+.pct.off{opacity:.45}
+.stop-grid{display:grid;grid-template-columns:minmax(0,1fr) 124px;gap:8px 10px;align-items:center}
+.stop-grid label{font-size:14px}
+.note-sm{margin:0;font-size:12.5px;color:var(--muted)}
+
+/* ---------- side rail ---------- */
+.side h3{margin-top:2px}
+.lb-you{margin:0;font-size:14px;color:var(--muted)}
+.lb-you b{color:var(--ink)}
+.lb{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.lb li{display:grid;grid-template-columns:28px 12px minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 10px;border-radius:10px;background:var(--night);font-variant-numeric:tabular-nums}
+.lb li.me{background:color-mix(in srgb,var(--gold) 16%,var(--night));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--gold) 50%,transparent)}
+.lb li.gap{background:none;grid-template-columns:1fr;text-align:center;color:var(--muted);padding:0;font-size:13px}
+.lb .rk{font-family:var(--f-cond);font-weight:700;color:var(--muted);font-size:15px}
+.lb li:nth-child(1) .rk{color:var(--gold)}
+.lb .dot{width:12px;height:12px;border-radius:50%}
+.lb .dot.off{opacity:.35}
+.lb .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.lb .nm small{color:var(--gold);font-family:var(--f-cond);font-weight:700;letter-spacing:.06em;margin-left:6px;font-size:12px;text-transform:uppercase}
+.lb .val{font-weight:700;font-size:14.5px}
+.lb-meta{font-size:12.5px;color:var(--muted)}
+.feed{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;max-height:220px;overflow:auto}
+.feed li{display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:8px;align-items:baseline;font-size:14px}
+.feed .dot{width:10px;height:10px;border-radius:50%;align-self:center}
+.chat-list{list-style:none;margin:0;padding:0 2px 0 0;display:flex;flex-direction:column;gap:6px;height:min(360px,46vh);overflow-y:auto;overscroll-behavior:contain}
+.chat-list li{max-width:88%;align-self:flex-start;background:var(--night);border-radius:12px 12px 12px 4px;padding:6px 10px;font-size:14.5px;line-height:1.35;overflow-wrap:anywhere}
+.chat-list li.mine{align-self:flex-end;background:color-mix(in srgb,var(--gold) 20%,var(--night));border-radius:12px 12px 4px 12px}
+.chat-list li.host{align-self:stretch;max-width:none;background:color-mix(in srgb,var(--gold) 12%,var(--night));border:1px solid color-mix(in srgb,var(--gold) 45%,transparent)}
+.chat-list li.empty{background:none;color:var(--muted);align-self:center;font-size:13.5px}
+.chat-list .who{display:block;font-family:var(--f-cond);font-weight:700;font-size:13.5px;letter-spacing:.03em}
+.chat-list .when{color:var(--muted);font-size:11.5px;margin-left:6px;font-family:var(--f-body);font-weight:500;letter-spacing:0}
+.chat-form{display:flex;gap:8px}
+.chat-form .text-in{font-size:16px;padding:9px 11px;min-width:0}
+.badge{display:inline-grid;place-items:center;min-width:18px;height:18px;border-radius:9px;background:var(--hot);color:var(--ink);font:700 11px var(--f-body);padding:0 5px;margin-left:4px;vertical-align:1px}
+.chat-dlg .dlg-body{padding:12px 16px 16px;gap:10px}
+.chat-dlg .chat-list{height:min(56vh,440px)}
+.feed li.empty{display:block}
+.feed .what{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.feed .what b{font-weight:700}
+.feed .when{color:var(--muted);font-size:12.5px}
+.ghost-btn{border:1px solid var(--rail);background:var(--night);border-radius:10px;padding:10px 12px;font-weight:700}
+.ghost-btn:hover{border-color:var(--muted)}
+
+.spark-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.spark-head span:last-child{font-size:12.5px;color:var(--muted)}
+#spark,#histo{width:100%;height:96px;border-radius:10px;background:var(--night)}
+#histo{height:110px}
+.legend{margin:-6px 0 0;font-size:12.5px;color:var(--muted);display:flex;gap:14px;align-items:center}
+.legend i{display:inline-block;width:14px;height:8px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.legend .bars{background:var(--teal)}
+.legend .line{height:2px;background:var(--ink)}
+.stats{margin:0;display:grid;grid-template-columns:1fr 1fr;gap:12px 14px}
+.stats div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.stats dt{font-family:var(--f-cond);font-weight:600;text-transform:uppercase;letter-spacing:.12em;font-size:11.5px;color:var(--muted)}
+.stats dd{margin:0;font-weight:700;font-size:17px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.pos{color:var(--good)} .neg{color:var(--bad)}
+
+.skins{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px}
+.skin{border:1px solid var(--rail);background:var(--night);border-radius:12px;padding:10px 6px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:13px;font-weight:600;min-width:0}
+.skin i{width:26px;height:26px;border-radius:50%;display:block}
+.skin[aria-checked="true"]{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+.skin:disabled{opacity:.5}
+.skin small{font-size:11px;color:var(--muted);font-weight:500;text-align:center;line-height:1.2}
+.trophies{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.trophies li{display:grid;grid-template-columns:30px minmax(0,1fr);gap:10px;align-items:center;padding:8px 10px;border-radius:10px;background:var(--night)}
+.trophies .medal{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-display);font-size:13px;background:var(--rail);color:var(--muted)}
+.trophies li.won .medal{background:linear-gradient(180deg,var(--gold),var(--gold-2));color:var(--night)}
+.trophies li:not(.won){opacity:.72}
+.trophies b{display:block;font-size:14.5px}
+.trophies span{font-size:13px;color:var(--muted)}
+
+/* ---------- switches ---------- */
+.switch{display:flex;align-items:center;gap:12px;cursor:pointer;font-weight:600;font-size:15px}
+.switch input{position:absolute;opacity:0;width:1px;height:1px}
+.switch small{display:block;font-weight:500;font-size:12.5px;color:var(--muted)}
+.track{width:44px;height:26px;border-radius:13px;background:var(--night);border:1px solid var(--rail);position:relative;transition:background .15s;flex:none}
+.track::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--muted);transition:transform .15s, background .15s}
+.switch input:checked + .track{background:color-mix(in srgb,var(--gold) 30%,var(--night));border-color:var(--gold)}
+.switch input:checked + .track::after{transform:translateX(18px);background:var(--gold)}
+.switch input:focus-visible + .track{outline:2px solid var(--gold);outline-offset:2px}
+
+/* ---------- dialogs ---------- */
+.dlg{background:var(--desk);color:var(--ink);border:1px solid var(--rail);border-radius:18px;padding:0;width:min(480px, calc(100vw - 32px));max-height:min(86vh, 860px)}
+.dlg::backdrop{background:color-mix(in srgb,var(--night) 78%,transparent);backdrop-filter:blur(2px)}
+.dlg-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--rail);position:sticky;top:0;background:var(--desk);z-index:1;margin:0}
+.dlg-head h2{font-family:var(--f-display);font-size:20px}
+.dlg-body{padding:16px;display:flex;flex-direction:column;gap:20px}
+.set-group{display:flex;flex-direction:column;gap:12px}
+.keys{margin:0;display:grid;grid-template-columns:auto 1fr;gap:8px 14px;font-size:14px}
+.keys dt{text-align:right}
+.keys dd{margin:0;color:var(--muted)}
+.danger{border:1px solid color-mix(in srgb,var(--bad) 60%,var(--rail));background:none;color:var(--bad);border-radius:10px;padding:10px 12px;font-weight:700}
+.danger.arm{background:var(--bad);color:var(--night)}
+.join{gap:14px}
+.join h2{font-family:var(--f-display);font-size:24px;color:var(--gold)}
+.join p{margin:0;color:var(--muted)}
+.text-in{background:var(--night);border:1px solid var(--rail);border-radius:10px;color:var(--ink);font:600 18px var(--f-body);padding:11px 12px;width:100%}
+.text-in:focus{outline:none;border-color:var(--gold)}
+.swatches{display:flex;flex-wrap:wrap;gap:10px}
+.swatches button{width:36px;height:36px;border-radius:50%;border:3px solid transparent;padding:0}
+.swatches button[aria-checked="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--night) inset}
+.err{margin:0;color:var(--bad);font-weight:600}
+.qr-box{background:#fff;border-radius:14px;padding:12px;align-self:center;width:min(260px,100%)}
+.qr-box svg{display:block;width:100%;height:auto}
+.url-row{display:flex;gap:8px;align-items:center}
+.url-row code{flex:1;min-width:0;background:var(--night);border:1px solid var(--rail);border-radius:10px;padding:10px 12px;font:600 15px var(--f-body);overflow-wrap:anywhere;user-select:all}
+
+/* ---------- page notices ---------- */
+.notes{position:fixed;z-index:50;left:50%;top:calc(env(safe-area-inset-top,0px) + 12px);transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;width:min(420px, calc(100vw - 32px));pointer-events:none}
+.note{background:var(--raise);border:1px solid var(--rail);border-radius:12px;padding:10px 14px;font-size:14px;box-shadow:0 10px 30px color-mix(in srgb,var(--night) 70%,transparent);animation:noteIn .25s ease-out}
+.note.gold{border-color:var(--gold)}
+.note.gold b{color:var(--gold)}
+.note.warn{border-color:var(--bad)}
+.note.out{opacity:0;transform:translateY(-6px);transition:opacity .3s, transform .3s}
+@keyframes noteIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+
+/* ---------- phone thumb bar ---------- */
+.mobile-bar{display:none}
+@media (max-width:899px){
+  body{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+  .desk #dropBtn,.desk #autoBtn,.desk .hint{display:none}
+  .mobile-bar{
+    display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center;
+    position:fixed;z-index:40;left:0;right:0;bottom:0;
+    padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));
+    background:var(--night);border-top:1px solid var(--rail);
+  }
+  .mb-bet{display:flex;align-items:center;gap:2px;background:var(--desk);border:1px solid var(--rail);border-radius:12px;padding:3px}
+  .mb-bet button{border:0;background:var(--night);border-radius:9px;width:38px;height:44px;font-family:var(--f-cond);font-weight:700;font-size:16px}
+  .mb-bet span{min-width:64px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums;font-size:14px;padding-inline:2px}
+  .mobile-bar .drop{padding:13px 8px;font-size:19px;box-shadow:0 4px 0 color-mix(in srgb,var(--gold-2) 55%,var(--night))}
+  .mb-auto{border:1px solid var(--rail);background:var(--desk);border-radius:12px;height:50px;padding:0 12px;font-family:var(--f-cond);font-weight:700;font-size:16px;letter-spacing:.04em;text-transform:uppercase}
+  .mb-auto[aria-pressed="true"]{background:var(--hot);border-color:var(--hot);color:var(--ink)}
+  .mobile-bar.has-chat{grid-template-columns:auto minmax(0,1fr) auto auto}
+  .mb-chat{width:46px;height:50px;border:1px solid var(--rail);background:var(--desk);border-radius:12px;display:grid;place-items:center;position:relative;padding:0}
+  .mb-chat svg{width:22px;height:22px}
+  .mb-chat .badge{position:absolute;top:-7px;right:-7px;margin:0}
+}
+@media (max-width:400px){ .mb-bet span{min-width:52px;font-size:13px} .mb-bet button{width:34px} .mb-auto{padding:0 9px} }
+@media (max-width:600px){
+  .tag{display:none}
+  .logo{font-size:21px}
+  .bal{font-size:22px}
+  .top{gap:8px}
+  .icon-btn{width:38px;height:38px}
+  .board{padding:24px 8px 8px}
+  .toast{top:30px;left:12px}
+  .toast .t1{font-size:17px}
+  .toast .t2{font-size:14px}
+  .rank-chip{top:28px;right:10px;font-size:13px;padding:4px 9px}
+  .boost-chip{top:28px;left:10px;font-size:13px;padding:4px 9px}
+  .board.boosting .toast{top:60px}
+  .feed-pop{top:60px;right:10px;font-size:13px}
+}
+@media (prefers-reduced-motion:reduce){
+  .bulbs i,.board.flash .bulbs i{animation:none;opacity:.6}
+  .toast.show,.feed-pop.show,.history li,.note,.rank-chip.bump,.boost-chip{animation:none}
+  .host-msg.show{animation:none}
+  #cv.prank-disco{animation:none}
+}
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <h1 class="logo">Plinko<b>32</b></h1>
+      <span class="tag" id="tagline">32 buckets, 31 rows of pegs, odds tilted your way</span>
+    </div>
+    <span id="gnh-slot"></span>
+    <div class="wallet">
+      <div class="cap">Balance</div>
+      <div class="bal" id="balance">$100.00</div>
+    </div>
+    <button class="icon-btn" id="soundBtn" type="button" aria-pressed="true" aria-label="Sound on" title="Sound on (M)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor"/>
+        <path class="wave" d="M15.5 8.5a5 5 0 0 1 0 7"/>
+        <path class="wave" d="M18.5 5.5a9 9 0 0 1 0 13"/>
+        <path class="mute" d="m16 9 6 6m0-6-6 6" style="display:none"/>
+      </svg>
+    </button>
+    <button class="icon-btn" id="settingsBtn" type="button" aria-label="Settings" title="Settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>
+      </svg>
+    </button>
+  </header>
+
+  <main class="stage">
+    <section class="board-col" aria-label="Plinko board">
+      <div class="board" id="board">
+        <div class="bulbs" id="bulbs" aria-hidden="true"></div>
+        <canvas id="cv" aria-label="Plinko board with 32 buckets. Hover or tap a bucket to see its payout and odds."></canvas>
+        <div class="toast" id="toast" hidden><span class="t1" id="toastT1"></span><span class="t2" id="toastT2"></span></div>
+        <button class="rank-chip" id="rankChip" type="button" hidden aria-label="Open leaderboard"></button>
+        <div class="feed-pop" id="feedPop" hidden></div>
+        <div class="boost-chip" id="boostChip" hidden></div>
+        <div class="host-msg" id="hostMsg" hidden><span class="cap" id="hostMsgCap">From the host</span><p id="hostMsgText"></p></div>
+        <div class="tip" id="tip" hidden></div>
+        <div class="broke" id="broke" hidden>
+          <div class="broke-card">
+            <h2>Out of cash</h2>
+            <p>Every ball has landed and your balance is under the $0.10 minimum bet.</p>
+            <button class="drop" id="refillBtn" type="button">Refill to $100</button>
+          </div>
+        </div>
+      </div>
+      <div class="history">
+        <span class="cap">Recent</span>
+        <ol id="hist"><li class="empty">Your last drops show up here</li></ol>
+      </div>
+    </section>
+
+    <aside class="desk panel" aria-label="Controls">
+      <div class="tabs" role="tablist" id="deskTabs" aria-label="Play mode">
+        <button type="button" role="tab" id="tab-manual" data-tab="manual" aria-controls="pane-manual" aria-selected="true">Manual</button>
+        <button type="button" role="tab" id="tab-auto" data-tab="auto" aria-controls="pane-auto" aria-selected="false">Auto</button>
+      </div>
+
+      <div class="field">
+        <div class="field-label"><label class="cap" for="bet">Bet per ball</label><small id="betNet"></small></div>
+        <div class="bet-row">
+          <div class="money"><span>$</span><input id="bet" inputmode="decimal" autocomplete="off" value="1.00"></div>
+          <button class="chip" id="betHalf" type="button" aria-label="Halve bet">½</button>
+          <button class="chip" id="betDouble" type="button" aria-label="Double bet">2×</button>
+          <button class="chip" id="betMax" type="button" aria-label="Bet the most allowed">Max</button>
+        </div>
+        <p class="limit-note" id="limitNote" hidden></p>
+      </div>
+
+      <div class="field">
+        <span class="cap" id="riskLbl">Risk</span>
+        <div class="seg" role="radiogroup" aria-labelledby="riskLbl" id="riskSeg">
+          <button type="button" role="radio" data-risk="low" aria-checked="true">Low</button>
+          <button type="button" role="radio" data-risk="medium" aria-checked="false">Medium</button>
+          <button type="button" role="radio" data-risk="high" aria-checked="false">High</button>
+        </div>
+        <p class="odds" id="odds"></p>
+      </div>
+
+      <div id="pane-manual" role="tabpanel" aria-labelledby="tab-manual" class="field">
+        <button class="drop" id="dropBtn" type="button">Drop ball</button>
+        <p class="hint">or press <kbd>Space</kbd>. Hold it to keep dropping.</p>
+      </div>
+
+      <div id="pane-auto" role="tabpanel" aria-labelledby="tab-auto" class="field" hidden>
+        <div class="field">
+          <div class="field-label"><label class="cap" for="speed">Speed</label><output id="speedOut" for="speed">4 balls/sec</output></div>
+          <input type="range" id="speed" min="1" max="20" step="1" value="4">
+        </div>
+        <div class="field">
+          <label class="cap" for="autoCount">Number of balls</label>
+          <div class="row"><input class="num" id="autoCount" type="number" min="0" step="1" value="0" inputmode="numeric"><span>0 keeps going until you stop</span></div>
+        </div>
+        <details class="adv" id="adv">
+          <summary>Strategy and stop rules <small id="advSummary"></small></summary>
+          <div class="adv-body">
+            <div class="rule">
+              <span class="cap">When a ball wins</span>
+              <div class="seg seg2 sm" role="radiogroup" aria-label="When a ball wins" id="onWinSeg">
+                <button type="button" role="radio" data-v="reset">Reset bet</button>
+                <button type="button" role="radio" data-v="increase">Raise bet</button>
+              </div>
+              <div class="pct" id="onWinPctBox"><input id="onWinPct" type="number" min="0" max="500" step="1" inputmode="numeric" aria-label="Raise bet after a win by percent"><span>%</span></div>
+            </div>
+            <div class="rule">
+              <span class="cap">When a ball loses</span>
+              <div class="seg seg2 sm" role="radiogroup" aria-label="When a ball loses" id="onLossSeg">
+                <button type="button" role="radio" data-v="reset">Reset bet</button>
+                <button type="button" role="radio" data-v="increase">Raise bet</button>
+              </div>
+              <div class="pct" id="onLossPctBox"><input id="onLossPct" type="number" min="0" max="500" step="1" inputmode="numeric" aria-label="Raise bet after a loss by percent"><span>%</span></div>
+            </div>
+            <div class="stop-grid">
+              <label for="stopProfit">Stop once I'm up</label>
+              <div class="money sm"><span>$</span><input id="stopProfit" inputmode="decimal" autocomplete="off"></div>
+              <label for="stopLoss">Stop once I'm down</label>
+              <div class="money sm"><span>$</span><input id="stopLoss" inputmode="decimal" autocomplete="off"></div>
+              <label for="stopHit">Stop on a hit of at least</label>
+              <div class="pct"><input id="stopHit" type="number" min="0" step="1" inputmode="numeric"><span>×</span></div>
+            </div>
+            <p class="note-sm">A win means the bucket paid more than the bet. Leave a box at 0 to switch that rule off. "Reset bet" goes back to the bet you started auto with.</p>
+          </div>
+        </details>
+        <button class="drop" id="autoBtn" type="button">Start auto</button>
+        <p class="auto-status" id="autoStatus" aria-live="polite">Off</p>
+      </div>
+    </aside>
+
+    <aside class="side panel" aria-label="Stats and trophies">
+      <div class="tabs" role="tablist" id="sideTabs" aria-label="Side panel">
+        <button type="button" role="tab" id="stab-lb" data-tab="lb" aria-controls="spane-lb" aria-selected="false" hidden>Ranks</button>
+        <button type="button" role="tab" id="stab-chat" data-tab="chat" aria-controls="spane-chat" aria-selected="false" hidden>Chat<span class="badge" id="chatBadge" hidden></span></button>
+        <button type="button" role="tab" id="stab-stats" data-tab="stats" aria-controls="spane-stats" aria-selected="true">Stats</button>
+        <button type="button" role="tab" id="stab-trophies" data-tab="trophies" aria-controls="spane-trophies" aria-selected="false">Trophies</button>
+      </div>
+
+      <section id="spane-lb" role="tabpanel" aria-labelledby="stab-lb" class="field" hidden>
+        <p class="lb-you" id="lbYou">Connecting to the table…</p>
+        <div class="seg seg4 sm" role="radiogroup" aria-label="Rank players by" id="lbSort">
+          <button type="button" role="radio" data-v="richest">Richest</button>
+          <button type="button" role="radio" data-v="hit">Best hit</button>
+          <button type="button" role="radio" data-v="win">Top win</button>
+          <button type="button" role="radio" data-v="balls">Balls</button>
+        </div>
+        <ol class="lb" id="lbList"></ol>
+        <div class="lb-meta" id="lbMeta"></div>
+        <h3 class="cap">Big hits at this table</h3>
+        <ul class="feed" id="feedList"><li class="empty">Hits of 10× or more from anyone show up here</li></ul>
+        <button class="ghost-btn" id="inviteBtn" type="button">Invite friends</button>
+      </section>
+
+      <section id="spane-chat" role="tabpanel" aria-labelledby="stab-chat" class="field" hidden>
+        <ol class="chat-list" id="chatList" aria-live="polite"><li class="empty">No messages yet. Say hi to the table.</li></ol>
+        <form class="chat-form" id="chatForm" autocomplete="off">
+          <input class="text-in" id="chatIn" maxlength="140" placeholder="Message the table" enterkeyhint="send" aria-label="Chat message">
+          <button class="ghost-btn" type="submit">Send</button>
+        </form>
+        <p class="err" id="chatErr" hidden></p>
+      </section>
+
+      <section id="spane-stats" role="tabpanel" aria-labelledby="stab-stats" class="field">
+        <div class="spark-head"><span class="cap">Balance</span><span id="sparkNote">after each of your last drops</span></div>
+        <canvas id="spark"></canvas>
+        <dl class="stats">
+          <div><dt>Balls dropped</dt><dd id="stDropped">0</dd></div>
+          <div><dt>In play</dt><dd id="stLive">0</dd></div>
+          <div><dt>Profit</dt><dd id="stProfit">$0.00</dd></div>
+          <div><dt>Best hit</dt><dd id="stBest">None yet</dd></div>
+          <div><dt>Total bet</dt><dd id="stWagered">$0.00</dd></div>
+          <div><dt>Luck</dt><dd id="stLuck" title="What you won back compared with the average for your bets">—</dd></div>
+        </dl>
+        <div class="spark-head"><span class="cap">Where your balls landed</span><span id="histoNote"></span></div>
+        <canvas id="histo"></canvas>
+        <p class="legend"><span><i class="bars"></i>Your drops</span><span><i class="line"></i>Expected</span></p>
+      </section>
+
+      <section id="spane-trophies" role="tabpanel" aria-labelledby="stab-trophies" class="field" hidden>
+        <h3 class="cap">Ball skin</h3>
+        <div class="skins" id="skinList" role="radiogroup" aria-label="Ball skin"></div>
+        <h3 class="cap" id="trophyCount">Trophies</h3>
+        <ul class="trophies" id="trophyList"></ul>
+      </section>
+    </aside>
+  </main>
+</div>
+
+<nav class="mobile-bar" id="mobileBar" aria-label="Quick controls">
+  <div class="mb-bet"><button type="button" id="mbHalf" aria-label="Halve bet">½</button><span id="mbBet">$1.00</span><button type="button" id="mbDouble" aria-label="Double bet">2×</button></div>
+  <button class="drop" id="mbDrop" type="button">Drop</button>
+  <button class="mb-auto" id="mbAuto" type="button" aria-pressed="false">Auto</button>
+  <button class="mb-chat" id="mbChat" type="button" aria-label="Open chat" hidden>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12z"/></svg>
+    <span class="badge" id="mbChatBadge" hidden></span>
+  </button>
+</nav>
+
+<div class="notes" id="notes" aria-live="polite"></div>
+
+<dialog class="dlg" id="settingsDlg" aria-labelledby="setTitle">
+  <form method="dialog" class="dlg-head"><h2 id="setTitle">Settings</h2><button class="icon-btn" value="close" aria-label="Close settings">✕</button></form>
+  <div class="dlg-body">
+    <section class="set-group">
+      <h3 class="cap">Sound</h3>
+      <label class="switch"><input type="checkbox" id="setSound" role="switch"><span class="track" aria-hidden="true"></span><span>Sound effects</span></label>
+      <div class="field">
+        <div class="field-label"><label class="cap" for="setVolume">Volume</label><output id="volOut" for="setVolume">80%</output></div>
+        <input type="range" id="setVolume" min="0" max="100" step="5">
+      </div>
+      <label class="switch"><input type="checkbox" id="setPlinks" role="switch"><span class="track" aria-hidden="true"></span><span>Musical pegs<small>Each row down plays the next note up a scale</small></span></label>
+    </section>
+    <section class="set-group">
+      <h3 class="cap" id="speedLbl">Ball speed</h3>
+      <div class="seg seg4 sm" role="radiogroup" aria-labelledby="speedLbl" id="setSpeed">
+        <button type="button" role="radio" data-v="normal">Normal</button>
+        <button type="button" role="radio" data-v="fast">Fast</button>
+        <button type="button" role="radio" data-v="turbo">Turbo</button>
+        <button type="button" role="radio" data-v="instant">Instant</button>
+      </div>
+    </section>
+    <section class="set-group">
+      <h3 class="cap">Effects</h3>
+      <label class="switch"><input type="checkbox" id="setTrails" role="switch"><span class="track" aria-hidden="true"></span><span>Ball trails</span></label>
+      <label class="switch"><input type="checkbox" id="setSparks" role="switch"><span class="track" aria-hidden="true"></span><span>Peg sparks</span></label>
+      <label class="switch"><input type="checkbox" id="setSuspense" role="switch"><span class="track" aria-hidden="true"></span><span>Slow-motion finish<small>Slows the last rows when a ball is headed for 25× or more</small></span></label>
+      <label class="switch"><input type="checkbox" id="setShake" role="switch"><span class="track" aria-hidden="true"></span><span>Screen shake on big wins</span></label>
+      <label class="switch"><input type="checkbox" id="setConfetti" role="switch"><span class="track" aria-hidden="true"></span><span>Confetti</span></label>
+    </section>
+    <section class="set-group" id="phoneGroup">
+      <h3 class="cap">Device</h3>
+      <label class="switch" id="hapticsRow"><input type="checkbox" id="setHaptics" role="switch"><span class="track" aria-hidden="true"></span><span>Vibrate on big wins</span></label>
+      <label class="switch" id="wakeRow"><input type="checkbox" id="setWake" role="switch"><span class="track" aria-hidden="true"></span><span>Keep the screen on during auto</span></label>
+    </section>
+    <section class="set-group">
+      <h3 class="cap">Keyboard</h3>
+      <dl class="keys">
+        <dt><kbd>Space</kbd></dt><dd>Drop a ball (hold to keep dropping)</dd>
+        <dt><kbd>A</kbd></dt><dd>Start or stop auto</dd>
+        <dt><kbd>↑</kbd> <kbd>↓</kbd></dt><dd>Double or halve the bet</dd>
+        <dt><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></dt><dd>Low, Medium, High risk</dd>
+        <dt><kbd>M</kbd></dt><dd>Sound on or off</dd>
+      </dl>
+    </section>
+    <section class="set-group" id="playerGroup">
+      <h3 class="cap" id="playerTitle">Progress</h3>
+      <p class="note-sm" id="playerText"></p>
+      <button type="button" class="ghost-btn" id="changeNameBtn" hidden>Change name or color</button>
+      <button type="button" class="danger" id="resetBtn">Reset balance, stats and trophies</button>
+    </section>
+  </div>
+</dialog>
+
+<dialog class="dlg" id="joinDlg" aria-labelledby="joinTitle">
+  <form class="dlg-body join" id="joinForm" novalidate>
+    <h2 id="joinTitle">Join the table</h2>
+    <p id="joinIntro">Everyone on this Wi‑Fi shares one leaderboard. You start with $100.</p>
+    <label class="cap" for="joinName">Your name</label>
+    <input class="text-in" id="joinName" maxlength="16" autocomplete="nickname" autocapitalize="words" enterkeyhint="go">
+    <span class="cap" id="colorLbl">Your color</span>
+    <div class="swatches" id="swatches" role="radiogroup" aria-labelledby="colorLbl"></div>
+    <p class="err" id="joinErr" hidden></p>
+    <button class="drop" type="submit" id="joinBtn">Join</button>
+  </form>
+</dialog>
+
+<dialog class="dlg chat-dlg" id="chatDlg" aria-labelledby="chatTitle">
+  <form method="dialog" class="dlg-head"><h2 id="chatTitle">Chat</h2><button class="icon-btn" value="close" aria-label="Close chat">✕</button></form>
+  <div class="dlg-body" id="chatDlgBody"></div>
+</dialog>
+
+<dialog class="dlg" id="inviteDlg" aria-labelledby="inviteTitle">
+  <form method="dialog" class="dlg-head"><h2 id="inviteTitle">Invite friends</h2><button class="icon-btn" value="close" aria-label="Close">✕</button></form>
+  <div class="dlg-body">
+    <p class="note-sm">Friends on the same Wi‑Fi can scan this code or type the address into their phone's browser.</p>
+    <div class="qr-box" id="qrBox"></div>
+    <div class="url-row"><code id="inviteUrl"></code><button class="ghost-btn" type="button" id="copyUrl">Copy</button></div>
+  </div>
+</dialog>
+
+<script>
+(() => {
+'use strict';
+
+const ONLINE = !!window.PLINKO_ONLINE;
+
+// ================= rules =================
+const ROWS = 31, NB = 32;                 // 31 rows of pegs -> 32 buckets
+const START = 10000, MIN_BET = 10;         // money is kept in cents
+const MAX_LIVE = 250, HIST_MAX = 20, SERIES_MAX = 300;
+const TAU = Math.PI * 2;
+const SUSPENSE_MULT = 25, SUSPENSE_ROWS = 7;
+
+// payout per bucket, center -> edge (mirrored on both sides). Must match server.js.
+const TABLES = {
+  low:    [1.1, 1.2, 1.3, 1.5, 1.8, 2.5, 4, 8, 15, 30, 75, 200, 500, 1000, 2500, 5000],
+  medium: [0.8, 1, 1.4, 2, 3, 5, 10, 20, 50, 120, 300, 750, 2000, 5000, 10000, 25000],
+  high:   [0.3, 0.5, 1, 2, 4, 8, 16, 40, 100, 250, 600, 1500, 4000, 10000, 50000, 100000],
+};
+const RISKS = ['low', 'medium', 'high'];
+const multAt = (risk, k) => TABLES[risk][Math.abs(k - 15.5) - 0.5];
+
+// exact bucket odds: binomial(31, 1/2)
+const PROB = [];
+{ let c = 1; for (let k = 0; k <= ROWS; k++) { PROB.push(c / 2 ** ROWS); c = c * (ROWS - k) / (k + 1); } }
+const RISK_INFO = {};
+for (const r of RISKS) {
+  let ev = 0, under = 0;
+  for (let k = 0; k < NB; k++) { const m = multAt(r, k); ev += m * PROB[k]; if (m < 1) under += PROB[k]; }
+  RISK_INFO[r] = { ev, under };
+}
+
+function colorFor(m) {
+  if (m < 1) return { fill: 'hsl(232,34%,56%)', shade: 'hsl(232,34%,33%)', text: '#f2f1ff' };
+  if (m >= 1000) return { fill: 'hsl(316,92%,64%)', shade: 'hsl(316,80%,36%)', text: '#1c0626' };
+  const t = Math.min(1, Math.log10(m) / 2);
+  const h = (165 - t * 180 + 360) % 360;
+  return { fill: `hsl(${h},86%,58%)`, shade: `hsl(${h},80%,32%)`, text: '#10132e' };
+}
+const COLORS = {};
+for (const r of RISKS) COLORS[r] = Array.from({ length: NB }, (_, k) => colorFor(multAt(r, k)));
+
+const PLAYER_COLORS = ['#ffc53d', '#ff4f81', '#3fd9c4', '#8b7bff', '#5ee391', '#ff8a3d', '#4fb6ff', '#f2f1ff'];
+
+// ball skins: three gradient stops plus the glow/trail color as "r,g,b"
+const SKINS = {
+  gold:    { name: 'Gold',    stops: ['#fffbe8', '#ffc53d', '#f08c00'], rgb: '255,190,60' },
+  ruby:    { name: 'Ruby',    stops: ['#ffe3ea', '#ff4f81', '#b3124a'], rgb: '255,79,129' },
+  ice:     { name: 'Ice',     stops: ['#f2fdff', '#8fe9ff', '#2a8fd4'], rgb: '143,233,255' },
+  neon:    { name: 'Neon',    stops: ['#f3fff6', '#5ee391', '#10a35a'], rgb: '94,227,145' },
+  fire:    { name: 'Fire',    stops: ['#fff4d6', '#ff8a3d', '#d93a12'], rgb: '255,120,40', embers: true },
+  galaxy:  { name: 'Galaxy',  stops: ['#e9dcff', '#8b5cf6', '#2b1260'], rgb: '170,130,255', stars: true },
+  rainbow: { name: 'Rainbow', rainbow: true },
+};
+
+const TROPHIES = [
+  { id: 'first',     name: 'First drop',        desc: 'Drop your first ball' },
+  { id: 'hit10',     name: 'Double digits',     desc: 'Land a 10× or better' },
+  { id: 'century',   name: 'Century',           desc: 'Drop 100 balls', skin: 'ruby' },
+  { id: 'grand',     name: 'Grand',             desc: 'Reach a $1,000 balance' },
+  { id: 'hit50',     name: 'Heater',            desc: 'Land a 50× or better', skin: 'neon' },
+  { id: 'daredevil', name: 'Daredevil',         desc: 'Drop 100 balls on High risk' },
+  { id: 'autopilot', name: 'Autopilot',         desc: 'Drop 500 balls with auto' },
+  { id: 'pit',       name: 'Ball pit',          desc: 'Drop 1,000 balls', skin: 'ice' },
+  { id: 'allin',     name: 'All in',            desc: 'Bet your whole balance on one ball and win' },
+  { id: 'comeback',  name: 'Comeback',          desc: 'Climb back to $100 after falling under $5' },
+  { id: 'roller',    name: 'High roller',       desc: 'Reach a $10,000 balance' },
+  { id: 'hit250',    name: 'Edge of the board', desc: 'Land a 250× or better', skin: 'fire' },
+  { id: 'million',   name: 'Millionaire',       desc: 'Reach a $1,000,000 balance', skin: 'galaxy' },
+  { id: 'hit1000',   name: 'Four digits',       desc: 'Land a 1,000× or better', skin: 'rainbow' },
+];
+const TROPHY_BY_ID = Object.fromEntries(TROPHIES.map(t => [t.id, t]));
+const SKIN_TROPHY = Object.fromEntries(TROPHIES.filter(t => t.skin).map(t => [t.skin, t]));
+
+// ================= randomness =================
+const rbuf = new Uint32Array(256); let rpos = 256;
+function rawRand() { if (rpos >= 256) { crypto.getRandomValues(rbuf); rpos = 0; } return rbuf[rpos++]; }
+const rand = () => rawRand() / 4294967296;
+const randBits31 = () => rawRand() & 0x7fffffff;
+
+// ================= formatting =================
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function money(c) {
+  const a = Math.abs(c) / 100, sign = c < 0 ? '−' : '';
+  if (a >= 1e6) {
+    const units = [[1e15, 'Q'], [1e12, 'T'], [1e9, 'B'], [1e6, 'M']];
+    for (const [v, u] of units) if (a >= v) return `${sign}$${(a / v).toFixed(2)}${u}`;
+  }
+  return sign + '$' + a.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+const signed = c => (c > 0 ? '+' : '') + money(c);
+const bucketLabel = m => m >= 1000 ? (m / 1000) + 'K' : m >= 100 ? String(m) : m + '×';
+const chipLabel = m => m >= 1000 ? (m / 1000) + 'K×' : m + '×';
+const longMult = m => m.toLocaleString('en-US') + '×';
+function pct(p) { const v = p * 100; return (v >= 1 ? v.toFixed(1) : v >= 0.01 ? v.toFixed(2) : v >= 0.0001 ? v.toFixed(4) : '<0.0001') + '%'; }
+const oneIn = p => Math.round(1 / p).toLocaleString('en-US');
+function ago(t) {
+  const s = Math.max(0, Math.round((Date.now() - t) / 1000));
+  return s < 10 ? 'now' : s < 60 ? `${s}s` : s < 3600 ? `${Math.floor(s / 60)}m` : `${Math.floor(s / 3600)}h`;
+}
+
+// ================= storage =================
+function lsGet(key, fallback) { try { const v = localStorage.getItem(key); return v == null ? fallback : JSON.parse(v); } catch (e) { return fallback; } }
+function lsSet(key, val) { try { val == null ? localStorage.removeItem(key) : localStorage.setItem(key, JSON.stringify(val)); } catch (e) {} }
+const SETTINGS_KEY = 'plinko32.settings';
+const PROFILE_KEY = ONLINE ? 'plinko32.lan.profile' : 'plinko32.v2';
+const TOKEN_KEY = 'plinko32.lan.token';
+
+const DEFAULT_SETTINGS = {
+  sound: true, volume: 0.8, plinks: true, speed: 'normal',
+  trails: true, sparks: true, suspense: true, shake: true, confetti: true, haptics: true, wake: true,
+  skin: 'gold', autoSpeed: 4, autoCount: 0,
+  onWin: 'reset', onWinPct: 0, onLoss: 'reset', onLossPct: 0, stopProfit: 0, stopLoss: 0, stopHit: 0,
+  deskTab: 'manual', sideTab: ONLINE ? 'lb' : 'stats', lbSort: 'richest',
+};
+const settings = Object.assign({}, DEFAULT_SETTINGS, lsGet(SETTINGS_KEY, {}));
+const saveSettings = () => lsSet(SETTINGS_KEY, settings);
+
+function freshProfile() {
+  return { balance: START, bet: 100, risk: 'low', dropped: 0, wagered: 0, won: 0, expected: 0, profit: 0, best: 0, bestWin: 0,
+    autoDrops: 0, highDrops: 0, wasLow: false, history: [], series: [START], buckets: new Array(NB).fill(0), trophies: {} };
+}
+const state = freshProfile();
+
+// ================= dom =================
+const $ = id => document.getElementById(id);
+const cv = $('cv'), ctx = cv.getContext('2d');
+const board = $('board'), balEl = $('balance'), tip = $('tip'), toast = $('toast');
+const betIn = $('bet'), dropBtn = $('dropBtn'), riskSeg = $('riskSeg'), oddsEl = $('odds');
+const autoBtn = $('autoBtn'), autoStatus = $('autoStatus'), speedIn = $('speed'), speedOut = $('speedOut'), countIn = $('autoCount');
+const histEl = $('hist'), brokeEl = $('broke'), soundBtn = $('soundBtn'), notesEl = $('notes');
+const css = getComputedStyle(document.documentElement);
+const TOK = n => css.getPropertyValue('--' + n).trim();
+const FONT_COND = '"Barlow Condensed","Arial Narrow",sans-serif';
+const FONT_BODY = '"Barlow","Helvetica Neue",Arial,sans-serif';
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// ================= runtime =================
+const auto = { on: false, left: Infinity, acc: 0, msg: '', baseBet: 0, session: 0 };
+let balls = [], floats = [], confetti = [], sparks = [];
+const glow = new Map();
+const bucketHit = new Float64Array(NB).fill(-1e9);
+let shownBal = START, pending = 0, shake = 0, ballSeq = 0;
+const net = { token: null, me: null, lastMe: null, board: null, config: { tableLimit: 0 }, info: null, es: null, connected: false, feed: [], lastRank: 0, frozenUntil: 0, boost: null, chat: [], unread: 0 };
+const boostMult = () => (net.boost && net.boost.until > Date.now() ? net.boost.mult : 1);
+const newerMe = me => !net.lastMe || (me.rev || 0) >= (net.lastMe.rev || 0);
+
+// ================= geometry (logical units; the canvas scales to fit) =================
+const G = {};
+function layout(compact) {
+  G.compact = compact;
+  G.W = 1000; G.SP = G.W / 34;
+  G.TOP = 60; G.VS = 21.4;
+  G.PEG_R = compact ? 4.4 : 3.2;
+  G.BALL_R = compact ? 9 : 6.8;
+  G.BK_W = G.SP - 3.4;
+  G.BK_Y = G.TOP + (ROWS - 1) * G.VS + 18;
+  G.BK_H = compact ? 70 : 32;
+  G.H = G.BK_Y + G.BK_H + 12;
+}
+layout(false);
+const rowY = r => G.TOP + r * G.VS;
+const pegX = (r, i) => G.W / 2 + (i - (r + 2) / 2) * G.SP;
+const bucketX = k => G.W / 2 + (k - 15.5) * G.SP;
+
+let scale = 1, S = 1, stat = null, sprites = {}, lastSize = '';
+function resize() {
+  const cs = getComputedStyle(board);
+  const bw = board.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const key = bw + 'x' + window.innerHeight + 'x' + devicePixelRatio;
+  if (key === lastSize || bw <= 0) return;
+  lastSize = key;
+  layout(bw < 620);
+  let sc = bw / G.W;
+  if (matchMedia('(min-width: 900px)').matches) sc = Math.min(sc, Math.max(380, window.innerHeight - 190) / G.H);
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  scale = sc; S = sc * dpr;
+  cv.style.width = G.W * sc + 'px'; cv.style.height = G.H * sc + 'px';
+  cv.width = Math.round(G.W * sc * dpr); cv.height = Math.round(G.H * sc * dpr);
+  sprites = {};
+  buildStatic(); buildBulbs(bw);
+}
+
+function rrect(c, x, y, w, h, r) {
+  c.beginPath();
+  c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r);
+  c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath();
+}
+
+function buildStatic() {
+  stat = document.createElement('canvas');
+  stat.width = cv.width; stat.height = cv.height;
+  const c = stat.getContext('2d');
+  c.setTransform(S, 0, 0, S, 0, 0);
+  c.fillStyle = TOK('rail');
+  rrect(c, G.W / 2 - 20, 0, 40, 8, 4); c.fill();
+  c.fillStyle = TOK('peg');
+  c.shadowColor = 'rgba(150,160,255,.6)'; c.shadowBlur = 5 * S;
+  c.beginPath();
+  for (let r = 0; r < ROWS; r++) {
+    const y = rowY(r);
+    for (let i = 0; i < r + 3; i++) { const x = pegX(r, i); c.moveTo(x + G.PEG_R, y); c.arc(x, y, G.PEG_R, 0, TAU); }
+  }
+  c.fill();
+}
+
+function hsl2rgb(h, s, l) {
+  s /= 100; l /= 100;
+  const f = n => { const k = (n + h / 30) % 12, a = s * Math.min(l, 1 - l); return Math.round(255 * (l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1)))); };
+  return `${f(0)},${f(8)},${f(4)}`;
+}
+const RIG_LOOKS = {
+  lucky:  { stops: ['#ffffff', '#fff1a8', '#ffcf00'], rgb: '255,236,140' },
+  cursed: { stops: ['#ead7ff', '#7e22ce', '#1b0630'], rgb: '190,80,255' },
+};
+const RAINBOW_LOOKS = Array.from({ length: 12 }, (_, i) => {
+  const h = i * 30;
+  return { stops: [`hsl(${h},100%,93%)`, `hsl(${h},95%,62%)`, `hsl(${h},85%,38%)`], rgb: hsl2rgb(h, 95, 62) };
+});
+function skinLook(key, hueIdx) {
+  const look = RIG_LOOKS[key] || (key === 'rainbow' ? RAINBOW_LOOKS[hueIdx % 12] : SKINS[key] || SKINS.gold);
+  if (!look.fs) look.fs = `rgb(${look.rgb})`;
+  return look;
+}
+function sprite(key, hueIdx = 0) {
+  const id = key === 'rainbow' ? 'rainbow' + hueIdx : key;
+  if (sprites[id]) return sprites[id];
+  const look = skinLook(key, hueIdx);
+  const R = G.BALL_R, pad = 5, size = (R + pad) * 2, cx = size / 2;
+  const sp = document.createElement('canvas');
+  sp.width = sp.height = Math.ceil(size * S);
+  const c = sp.getContext('2d');
+  c.setTransform(S, 0, 0, S, 0, 0);
+  const halo = c.createRadialGradient(cx, cx, R * 0.6, cx, cx, R + pad);
+  halo.addColorStop(0, `rgba(${look.rgb},.45)`); halo.addColorStop(1, `rgba(${look.rgb},0)`);
+  c.fillStyle = halo; c.fillRect(0, 0, size, size);
+  const g = c.createRadialGradient(cx - R * 0.35, cx - R * 0.4, R * 0.1, cx, cx, R);
+  g.addColorStop(0, look.stops[0]); g.addColorStop(0.38, look.stops[1]); g.addColorStop(1, look.stops[2]);
+  c.fillStyle = g; c.beginPath(); c.arc(cx, cx, R, 0, TAU); c.fill();
+  if (look.stars) {
+    c.fillStyle = 'rgba(255,255,255,.9)';
+    for (const [dx, dy, r] of [[-0.3, 0.25, 0.09], [0.35, -0.1, 0.07], [0.1, 0.45, 0.06], [-0.05, -0.35, 0.05]]) {
+      c.beginPath(); c.arc(cx + dx * R, cx + dy * R, r * R, 0, TAU); c.fill();
+    }
+  }
+  sp.half = size / 2;
+  sprites[id] = sp;
+  return sp;
+}
+
+// the 32 buckets only change with risk, boost or size, so draw them once into little canvases
+let bucketCache = null, bucketKey = '';
+function bucketSprites(bm) {
+  const key = `${state.risk}|${bm}|${S}|${G.compact}|${fontsReady}`;
+  if (key === bucketKey) return bucketCache;
+  bucketKey = key;
+  const cols = COLORS[state.risk], BP = 2, h = G.BK_H - 3;
+  bucketCache = [];
+  for (let k = 0; k < NB; k++) {
+    const c = cols[k], cv2 = document.createElement('canvas');
+    cv2.width = Math.ceil((G.BK_W + BP * 2) * S); cv2.height = Math.ceil((G.BK_H + BP * 2) * S);
+    const g = cv2.getContext('2d');
+    g.setTransform(S, 0, 0, S, BP * S, BP * S);
+    g.fillStyle = c.shade; rrect(g, 0, 3, G.BK_W, h, 5); g.fill();
+    g.fillStyle = c.fill; rrect(g, 0, 0, G.BK_W, h, 5); g.fill();
+    g.fillStyle = c.text; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.font = G.compact ? `700 23px ${FONT_COND}` : `700 12.5px ${FONT_COND}`;
+    const label = bucketLabel(+(multAt(state.risk, k) * bm).toFixed(2));
+    if (G.compact) { g.translate(G.BK_W / 2, h / 2); g.rotate(-Math.PI / 2); g.fillText(label, 0, 1, h - 8); }
+    else g.fillText(label, G.BK_W / 2, h / 2 + 1, G.BK_W - 3);
+    bucketCache.push(cv2);
+  }
+  return bucketCache;
+}
+let fontsReady = 0;
+if (document.fonts) { document.fonts.ready.then(() => { fontsReady++; }); document.fonts.addEventListener?.('loadingdone', () => { fontsReady++; }); }
+
+function buildBulbs(w) {
+  const el = $('bulbs'), n = Math.max(10, Math.round(w / 26));
+  if (el.childElementCount === n) return;
+  el.innerHTML = '';
+  for (let i = 0; i < n; i++) { const b = document.createElement('i'); b.style.setProperty('--n', i % 4); el.appendChild(b); }
+}
+
+// ================= sound =================
+const snd = { ctx: null, master: null, lastPlink: 0, lastLand: 0 };
+function audio() {
+  if (!snd.ctx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    try {
+      snd.ctx = new AC();
+      const comp = snd.ctx.createDynamicsCompressor();
+      comp.threshold.value = -16; comp.ratio.value = 6;
+      snd.master = snd.ctx.createGain();
+      snd.master.gain.value = settings.volume;
+      snd.master.connect(comp); comp.connect(snd.ctx.destination);
+    } catch (e) { snd.ctx = null; return; }
+  }
+  if (snd.ctx.state === 'suspended') snd.ctx.resume().catch(() => {});
+}
+function voice(freq, dur, o = {}) {
+  if (!settings.sound || !snd.ctx || snd.ctx.state !== 'running') return;
+  const { type = 'sine', vol = 0.05, when = 0, attack = 0.004, detune = 0, glide = 0 } = o;
+  const t = snd.ctx.currentTime + when, osc = snd.ctx.createOscillator(), g = snd.ctx.createGain();
+  osc.type = type; osc.frequency.setValueAtTime(freq, t);
+  if (detune) osc.detune.value = detune;
+  if (glide) osc.frequency.exponentialRampToValueAtTime(glide, t + dur);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + attack); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  osc.connect(g); g.connect(snd.master); osc.start(t); osc.stop(t + dur + 0.05);
+}
+// major pentatonic from G4: every note sounds good against every other, so a room full of balls stays musical
+const PENTA = [0, 2, 4, 7, 9];
+const note = step => 392 * Math.pow(2, Math.floor(step / 5) + PENTA[((step % 5) + 5) % 5] / 12);
+function plink(row, now) {
+  const gap = balls.length > 20 ? 90 : balls.length > 6 ? 50 : 34;
+  if (!settings.plinks || now - snd.lastPlink < gap) return;
+  snd.lastPlink = now;
+  voice(note(Math.round(row / 30 * 11)), 0.09, { vol: balls.length > 6 ? 0.014 : 0.03, detune: (rand() - 0.5) * 14 });
+}
+function landSound(m, now) {
+  if (m >= 10 || now - snd.lastLand < 45) return;
+  snd.lastLand = now;
+  if (m < 1) { voice(160, 0.16, { vol: 0.05, glide: 105 }); return; }       // a dull thud: losing buckets never cheer
+  if (m === 1) { voice(440, 0.08, { type: 'triangle', vol: 0.03 }); return; }
+  const f = note(Math.min(14, 5 + Math.round(Math.log2(m) * 2)));
+  voice(f, 0.22, { type: 'triangle', vol: 0.07 });
+  voice(f * 1.5, 0.18, { vol: 0.03, when: 0.03 });
+}
+function winJingle(m) {
+  const steps = m >= 1000 ? [5, 7, 8, 10, 12, 13, 15] : m >= 50 ? [5, 7, 8, 10, 12] : [8, 10, 12];
+  steps.forEach((s, i) => {
+    voice(note(s), 0.26, { type: 'square', vol: 0.026, when: i * 0.075 });
+    voice(note(s) * 2, 0.2, { vol: 0.018, when: i * 0.075 });
+  });
+  if (m >= 50) { const w = steps.length * 0.075; for (const s of [10, 12, 13]) voice(note(s), 1.0, { type: 'triangle', vol: 0.03, when: w }); }
+}
+const sadTrombone = () => [392, 370, 349, 262].forEach((f, i) => voice(f, i === 3 ? 0.8 : 0.3, { type: 'sawtooth', vol: 0.03, when: i * 0.32, glide: i === 3 ? 240 : 0 }));
+const riser = () => voice(200, 1.2, { type: 'sawtooth', vol: 0.012, glide: 900, attack: 0.35 });
+const trophyChime = () => { voice(note(12), 0.3, { type: 'triangle', vol: 0.05 }); voice(note(15), 0.4, { type: 'triangle', vol: 0.05, when: 0.1 }); };
+function buzz(p) { if (settings.haptics && navigator.vibrate) { try { navigator.vibrate(p); } catch (e) {} } }
+
+// screen wake lock while auto runs
+let wakeLock = null;
+async function wakeOn() {
+  if (!settings.wake || !('wakeLock' in navigator) || wakeLock) return;
+  try { wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release', () => { wakeLock = null; }); } catch (e) {}
+}
+function wakeOff() { if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; } }
+
+// ================= notices =================
+function notice(html, kind = '', ms = 3400) {
+  const el = document.createElement('div');
+  el.className = 'note ' + kind;
+  el.innerHTML = html;
+  notesEl.prepend(el);
+  while (notesEl.children.length > 3) notesEl.lastChild.remove();
+  setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 320); }, ms);
+}
+
+// ================= limits =================
+const tableLimit = () => (ONLINE ? net.config.tableLimit || 0 : 0);
+const maxBet = () => {
+  const lim = tableLimit();
+  if (ONLINE && !net.me) return lim || Infinity;              // balance not known yet: don't shrink the saved bet
+  return Math.max(MIN_BET, lim ? Math.min(lim, state.balance) : state.balance);
+};
+
+// ================= dropping =================
+const SPEEDS = { normal: 1, fast: 1.7, turbo: 3, instant: Infinity };
+const DROP_DELAY = 110;   // ms between asking the server for a ball and showing it
+const animMs = () => (settings.speed === 'instant' ? 0 : Math.round(3300 / SPEEDS[settings.speed]));
+
+function drop(source) {
+  const bet = state.bet;
+  if (bet < MIN_BET || bet > state.balance) return 'funds';
+  if (tableLimit() && bet > tableLimit()) return 'limit';
+  if (balls.length + pending >= MAX_LIVE) return 'busy';
+  if (ONLINE && !net.me) return 'funds';
+  const risk = state.risk, allIn = bet === state.balance, isAuto = source === 'auto';
+  state.balance -= bet;
+  if (ONLINE) {
+    pending++;
+    const t0 = performance.now();
+    api('drop', { bet, risk, anim: animMs() }).then(r => {
+      if (newerMe(r.me)) net.lastMe = r.me;
+      // start each ball a fixed moment after it was asked for, so network hiccups don't bunch balls together
+      const go = () => { pending--; spawn({ bits: r.path, bet, risk, allIn, isAuto, payout: r.payout, rig: r.rig, boost: r.boost }); };
+      const wait = t0 + DROP_DELAY - performance.now();
+      wait > 4 ? setTimeout(go, wait) : go();
+    }).catch(e => {
+      pending--;
+      state.balance += bet;
+      dropFailed(e);
+      hud();
+    });
+  } else {
+    spawn({ bits: randBits31(), bet, risk, allIn, isAuto });
+  }
+  hud();
+  return true;
+}
+
+function spawn({ bits, bet, risk, allIn, isAuto, payout, rig = null, boost = 1 }) {
+  const rp = new Uint8Array(ROWS + 1);        // rights taken before each row
+  for (let r = 0; r < ROWS; r++) rp[r + 1] = rp[r] + ((bits >>> r) & 1);
+  const k = rp[ROWS], mult = multAt(risk, k);
+  if (payout == null) payout = Math.round(bet * mult);   // online, the server's payout (it includes any host boost)
+  const f = SPEEDS[settings.speed];
+  const susp = settings.suspense && mult >= SUSPENSE_MULT && f !== Infinity;
+  const segs = ROWS + 1;                      // 0: fall onto the top peg, 1..30: peg to peg, 31: into the bucket
+  const dur = new Float32Array(segs), hop = new Float32Array(segs), cum = new Float32Array(segs);
+  dur[0] = (230 + rand() * 40) / f;
+  for (let s = 1; s < ROWS; s++) { dur[s] = (82 + rand() * 24) / f; hop[s] = 0.28 + rand() * 0.3; }
+  dur[ROWS] = 150 / f; hop[ROWS] = 0.2;
+  if (susp) for (let s = ROWS - SUSPENSE_ROWS; s <= ROWS; s++) dur[s] *= f > 1 ? 2.2 * f / 1.4 : 2.2;
+  let acc = 0;
+  for (let s = 0; s < segs; s++) { acc += dur[s]; cum[s] = acc; }
+
+  state.dropped++; state.wagered += bet; state.expected += bet * RISK_INFO[risk].ev;
+  if (isAuto) state.autoDrops++;
+  if (risk === 'high') state.highDrops++;
+  const b = { id: ballSeq++, rp, k, mult, payout, bet, risk, allIn, isAuto, skin: rig || settings.skin, rig, boost, susp, riser: false,
+    dur, hop, cum, t: 0, seg: 0, jit: (rand() - 0.5) * 10, trail: [] };
+  if (f === Infinity) { land(b, performance.now()); afterLanding(); }
+  else balls.push(b);
+  checkTrophies(null);
+  hud(); scheduleSave();
+}
+
+function dropFailed(e) {
+  if (e.code === 'rate') return;
+  if (e.code === 'frozen') { net.frozenUntil = Date.now() + (e.ms || 0); stopAuto('Frozen by the host'); notice(esc(e.message), 'warn'); return; }
+  if (e.code === 'auth') { stopAuto(''); openJoin('Your seat expired. Join again to keep playing.'); return; }
+  if (e.code === 'limit') { stopAuto('Stopped: bet is over the table limit'); setBet(state.bet); notice(esc(e.message), 'warn'); return; }
+  if (e.code === 'funds') { refreshMe(); return; }
+  stopAuto('Stopped: lost connection');
+  notice(e.network ? "Can't reach the game server. Make sure you're on the same Wi‑Fi as the host." : esc(e.message), 'warn', 5000);
+}
+
+const contactX = (b, r) => G.W / 2 + G.SP * (b.rp[r] - r / 2);
+const contactY = r => rowY(r) - G.PEG_R - G.BALL_R;
+function ballPos(b) {
+  const s = b.seg, t0 = s ? b.cum[s - 1] : 0, u = Math.min(1, (b.t - t0) / b.dur[s]);
+  if (s === 0) {
+    const x0 = G.W / 2 + b.jit, y0 = G.BALL_R + 2, x1 = contactX(b, 0), y1 = contactY(0);
+    return [x0 + (x1 - x0) * u, y0 + (y1 - y0) * u * u];
+  }
+  const x0 = contactX(b, s - 1), y0 = contactY(s - 1);
+  const x1 = s === ROWS ? bucketX(b.k) : contactX(b, s);
+  const y1 = s === ROWS ? G.BK_Y + 4 : contactY(s);
+  const h = b.hop[s] * G.VS;
+  return [x0 + (x1 - x0) * u, y0 + (y1 - y0) * u - h * 4 * u * (1 - u)];
+}
+
+function stepBall(b, dt, now) {
+  b.t += dt;
+  while (b.seg <= ROWS && b.t >= b.cum[b.seg]) {
+    if (b.seg < ROWS) {
+      const i = b.rp[b.seg] + 1;
+      glow.set(b.seg * 64 + i, now);
+      plink(b.seg, now);
+      if (settings.sparks && !RM && sparks.length < 260 && balls.length < 40) {
+        const look = skinLook(b.skin, (b.id + (now / 90 | 0)) % 12);
+        for (let n = 0; n < 3; n++) {
+          sparks.push({ x: pegX(b.seg, i), y: rowY(b.seg) - G.PEG_R, vx: (rand() - 0.5) * 0.16, vy: -0.05 - rand() * 0.12, age: 0, life: 260 + rand() * 120, fs: look.fs, r: 1.2 + rand() * 1.2 });
+        }
+      }
+      if (b.susp && !b.riser && b.seg >= ROWS - SUSPENSE_ROWS - 1) { b.riser = true; riser(); }
+    } else {
+      land(b, now);
+    }
+    b.seg++;
+  }
+  return b.seg > ROWS;
+}
+
+function land(b, now) {
+  b.landed = true;
+  const net_ = b.payout - b.bet;
+  state.balance += b.payout;
+  state.won += b.payout;
+  state.profit += net_;
+  if (b.mult > state.best || (b.mult === state.best && net_ > state.bestWin)) state.best = b.mult;
+  state.bestWin = Math.max(state.bestWin, net_);
+  state.buckets[b.k]++;
+  state.series.push(state.balance + inFlightBets());
+  if (state.series.length > SERIES_MAX) state.series.splice(0, state.series.length - SERIES_MAX);
+  bucketHit[b.k] = now;
+  pushHistory(b.mult);
+  if (floats.length < 16) floats.push({ x: bucketX(b.k), y: G.BK_Y - 8, text: net_ === 0 ? '±$0' : signed(net_), kind: net_ > 0 ? 'win' : net_ < 0 ? 'loss' : 'even', t0: now });
+  landSound(b.mult, now);
+  if (net_ > 0 && now - lastWinFlash > 250) { lastWinFlash = now; balFlash('up', 180); }
+  if (b.mult >= 10 || b.rig) celebrate(b, net_);
+  autoAfterLanding(b, net_);
+  checkTrophies(b);
+  statsDirty = true;
+}
+const inFlightBets = () => balls.reduce((a, x) => a + (x.landed ? 0 : x.bet), 0);
+
+function afterLanding() {
+  if (ONLINE && !balls.length && !pending && net.lastMe) applyMe(net.lastMe, true);
+  hud(); scheduleSave();
+}
+let balFlashT = 0, lastWinFlash = 0;
+function balFlash(kind, ms) {
+  balEl.classList.remove('up', 'down'); balEl.classList.add(kind);
+  clearTimeout(balFlashT); balFlashT = setTimeout(() => balEl.classList.remove('up', 'down'), ms);
+}
+
+// ================= celebrations =================
+let toastT = 0, flashT = 0;
+function celebrate(b, win) {
+  const m = b.mult;
+  $('toastT1').textContent = b.rig === 'cursed' ? 'Cursed!' : b.rig === 'lucky' ? 'Lucky ball!' : m >= 1000 ? 'Jackpot!' : m >= 50 ? 'Big win!' : 'Nice hit!';
+  $('toastT2').textContent = `${b.rig ? 'Rigged by the host · ' : ''}${longMult(m)}${b.boost > 1 ? ` (${b.boost}× boost)` : ''}  ·  ${signed(win)}`;
+  toast.hidden = false; toast.classList.remove('show'); void toast.offsetWidth; toast.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(() => { toast.hidden = true; }, 2200);
+  if (b.rig === 'cursed') { sadTrombone(); buzz([60, 60, 60]); return; }
+  winJingle(m);
+  buzz(m >= 50 ? [40, 40, 90] : 25);
+  if (m >= 50) {
+    if (settings.confetti && !RM) burst(bucketX(b.k), G.BK_Y, m >= 1000 ? 170 : m >= 250 ? 110 : 70);
+    if (settings.shake && !RM) shake = Math.max(shake, m >= 1000 ? 14 : m >= 250 ? 9 : 6);
+    board.classList.add('flash');
+    clearTimeout(flashT); flashT = setTimeout(() => board.classList.remove('flash'), 1600);
+  }
+}
+function burst(x, y, n) {
+  const cols = [TOK('gold'), TOK('hot'), TOK('teal'), TOK('peg'), TOK('gold-2')];
+  for (let i = 0; i < n; i++) {
+    const a = -Math.PI / 2 + (rand() - 0.5) * 1.8, sp = 0.35 + rand() * 0.6;
+    confetti.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, rot: rand() * TAU, vr: (rand() - 0.5) * 0.02,
+      s: 5 + rand() * 6, c: cols[i % cols.length], age: 0, life: 1300 + rand() * 700 });
+  }
+}
+
+// ================= trophies =================
+function checkTrophies(b) {
+  const s = state, got = [];
+  const give = (id, cond) => { if (cond && !s.trophies[id]) { s.trophies[id] = Date.now(); got.push(id); } };
+  give('first', s.dropped >= 1);
+  give('century', s.dropped >= 100);
+  give('pit', s.dropped >= 1000);
+  give('autopilot', s.autoDrops >= 500);
+  give('daredevil', s.highDrops >= 100);
+  if (b) {
+    give('hit10', b.mult >= 10); give('hit50', b.mult >= 50); give('hit250', b.mult >= 250); give('hit1000', b.mult >= 1000);
+    give('allin', b.allIn && b.payout > b.bet);
+    const settled = s.balance + inFlightBets();
+    if (settled < 500 && balls.length <= 1 && !pending) s.wasLow = true;
+    give('comeback', s.wasLow && settled >= 10000);
+    give('grand', settled >= 100000); give('roller', settled >= 1000000); give('million', settled >= 100000000);
+  }
+  for (const id of got) {
+    const t = TROPHY_BY_ID[id];
+    notice(`<b>Trophy: ${esc(t.name)}</b>${t.skin ? ` · the ${SKINS[t.skin].name} ball is now yours` : ''}`, 'gold', 4200);
+  }
+  if (got.length) { trophyChime(); renderTrophies(); }
+}
+
+// ================= auto =================
+function startAuto() {
+  audio();
+  const n = Math.max(0, Math.floor(+countIn.value || 0));
+  countIn.value = n; settings.autoCount = n;
+  auto.on = true; auto.left = n || Infinity; auto.acc = 1000 / settings.autoSpeed; auto.msg = '';
+  auto.baseBet = state.bet; auto.session = 0;
+  wakeOn(); hud(); saveSettings();
+}
+function stopAuto(msg) {
+  if (!auto.on && !msg) return;
+  auto.on = false; auto.msg = msg || '';
+  wakeOff(); hud();
+}
+const toggleAuto = () => (auto.on ? stopAuto('') : startAuto());
+function runAuto(dt) {
+  if (!auto.on) return;
+  const iv = 1000 / settings.autoSpeed;
+  auto.acc = Math.min(auto.acc + dt, iv * 3);
+  while (auto.on && auto.acc >= iv) {
+    const r = drop('auto');
+    if (r === true) {
+      auto.acc -= iv;
+      if (auto.left !== Infinity && --auto.left <= 0) stopAuto('Done');
+    } else if (r === 'limit') {
+      stopAuto('Stopped: bet is over the table limit');
+    } else if (r === 'busy' || balls.length || pending) {
+      auto.acc = iv; break;                    // wait for balls in play to pay out
+    } else {
+      stopAuto(state.balance < MIN_BET ? 'Stopped: out of cash' : 'Stopped: bet is more than your balance');
+    }
+  }
+}
+function autoAfterLanding(b, net_) {
+  if (!b.isAuto || !auto.on) return;
+  auto.session += net_;
+  if (net_ > 0) setBet(settings.onWin === 'increase' && settings.onWinPct > 0 ? state.bet * (1 + settings.onWinPct / 100) : auto.baseBet, true);
+  else if (net_ < 0) setBet(settings.onLoss === 'increase' && settings.onLossPct > 0 ? state.bet * (1 + settings.onLossPct / 100) : auto.baseBet, true);
+  if (settings.stopProfit > 0 && auto.session >= settings.stopProfit) stopAuto(`Stopped: up ${money(auto.session)}`);
+  else if (settings.stopLoss > 0 && -auto.session >= settings.stopLoss) stopAuto(`Stopped: down ${money(-auto.session)}`);
+  else if (settings.stopHit > 0 && b.mult >= settings.stopHit) stopAuto(`Stopped on a ${longMult(b.mult)} hit`);
+}
+
+// ================= ui =================
+let lastHud = '', hudDirty = true;
+function hud() { hudDirty = true; }   // coalesce: the frame loop redraws the panel at most once per frame
+function hudNow() {
+  const lim = tableLimit();
+  const frozen = Math.ceil((net.frozenUntil - Date.now()) / 1000);
+  const canBet = frozen <= 0 && state.bet >= MIN_BET && state.bet <= state.balance && (!lim || state.bet <= lim) && (!ONLINE || net.me);
+  dropBtn.disabled = $('mbDrop').disabled = !canBet;
+  $('mbDrop').textContent = frozen > 0 ? `Frozen ${frozen}s` : 'Drop';
+  dropBtn.textContent = canBet ? 'Drop ball' : frozen > 0 ? `Frozen for ${frozen}s` : ONLINE && !net.me ? 'Join to play' : state.balance < MIN_BET ? 'Out of cash' : 'Bet is over balance';
+  autoBtn.textContent = auto.on ? 'Stop auto' : 'Start auto';
+  autoBtn.classList.toggle('stop', auto.on);
+  autoBtn.disabled = !auto.on && !canBet;
+  const mbAuto = $('mbAuto');
+  mbAuto.setAttribute('aria-pressed', auto.on); mbAuto.textContent = auto.on ? 'Stop' : 'Auto';
+  autoStatus.textContent = auto.on ? (auto.left === Infinity ? 'Running' : `${auto.left} left`) + (auto.session ? ` · ${signed(auto.session)}` : '') : (auto.msg || 'Off');
+  autoStatus.classList.toggle('on', auto.on);
+
+  $('stDropped').textContent = state.dropped.toLocaleString('en-US');
+  $('stLive').textContent = balls.length + pending;
+  const pr = $('stProfit');
+  pr.textContent = signed(state.profit);
+  pr.className = state.profit > 0 ? 'pos' : state.profit < 0 ? 'neg' : '';
+  $('stBest').textContent = state.best ? longMult(state.best) : 'None yet';
+  $('stWagered').textContent = money(state.wagered);
+  $('stLuck').textContent = state.expected > 0 ? Math.round(state.won / state.expected * 100) + '%' : '—';
+
+  const locked = balls.length + pending > 0;
+  for (const btn of riskSeg.children) {
+    btn.setAttribute('aria-checked', btn.dataset.risk === state.risk);
+    btn.disabled = locked && btn.dataset.risk !== state.risk;
+    btn.title = btn.disabled ? 'Change risk once every ball has landed' : '';
+  }
+  const info = RISK_INFO[state.risk];
+  const oddsKey = state.risk;
+  if (oddsKey !== lastHud) {
+    lastHud = oddsKey;
+    oddsEl.innerHTML = `Average return <b>${info.ev.toFixed(2)}×</b> your bet. ` +
+      (info.under === 0 ? 'Every bucket pays more than you bet.' : `Only <b>${Math.round(info.under * 100)}%</b> of drops pay back less than the bet.`);
+  }
+  $('betNet').textContent = `avg ${signed(Math.round(state.bet * (info.ev - 1)))} per ball`;
+  $('mbBet').textContent = money(state.bet);
+  const ln = $('limitNote');
+  ln.hidden = !lim; if (lim) ln.textContent = `Table limit: ${money(lim)} per ball (set by the host)`;
+  brokeEl.hidden = !(state.balance < MIN_BET && !balls.length && !pending && (!ONLINE || net.me));
+}
+
+function renderHistory() {
+  histEl.innerHTML = '';
+  if (!state.history.length) { histEl.innerHTML = '<li class="empty">Your last drops show up here</li>'; return; }
+  for (const m of state.history) histEl.appendChild(histItem(m));
+}
+function histItem(m) {
+  const li = document.createElement('li'), c = colorFor(m);
+  li.style.background = c.fill; li.style.color = c.text; li.textContent = chipLabel(m);
+  return li;
+}
+const histQueue = [];
+function pushHistory(m) {
+  state.history.unshift(m);
+  if (state.history.length > HIST_MAX) state.history.length = HIST_MAX;
+  histQueue.push(m);
+}
+function flushHistory() {
+  if (!histQueue.length) return;
+  if (histEl.querySelector('.empty')) histEl.innerHTML = '';
+  const add = histQueue.splice(0).slice(-HIST_MAX), frag = document.createDocumentFragment();
+  for (let i = add.length - 1; i >= 0; i--) frag.appendChild(histItem(add[i]));
+  histEl.prepend(frag);
+  while (histEl.children.length > HIST_MAX) histEl.lastChild.remove();
+}
+
+function setBet(c, quiet) {
+  c = Math.round(c);
+  if (!Number.isFinite(c)) c = state.bet;
+  state.bet = Math.max(MIN_BET, Math.min(c, maxBet()));
+  if (document.activeElement !== betIn) betIn.value = (state.bet / 100).toFixed(2);
+  if (!quiet) { hud(); scheduleSave(); }
+}
+const parseMoney = v => Math.round(parseFloat(String(v).replace(/[^0-9.]/g, '')) * 100);
+
+function setRisk(r) {
+  if (!RISKS.includes(r) || balls.length + pending) return;
+  state.risk = r; hud(); scheduleSave(); statsDirty = true;
+}
+
+function setSound(on) {
+  settings.sound = on;
+  soundBtn.setAttribute('aria-pressed', on);
+  soundBtn.setAttribute('aria-label', on ? 'Sound on' : 'Sound off');
+  soundBtn.title = on ? 'Sound on (M)' : 'Sound off (M)';
+  soundBtn.querySelectorAll('.wave').forEach(p => { p.style.display = on ? '' : 'none'; });
+  soundBtn.querySelector('.mute').style.display = on ? 'none' : '';
+  $('setSound').checked = on;
+  saveSettings();
+}
+
+function selectTab(groupId, tab) {
+  for (const btn of $(groupId).querySelectorAll('[role=tab]')) {
+    const on = btn.dataset.tab === tab;
+    btn.setAttribute('aria-selected', on);
+    $(btn.getAttribute('aria-controls')).hidden = !on;
+  }
+}
+function setDeskTab(tab) { settings.deskTab = tab; selectTab('deskTabs', tab); saveSettings(); }
+function setSideTab(tab) {
+  if ((tab === 'lb' || tab === 'chat') && !ONLINE) tab = 'stats';
+  settings.sideTab = tab; selectTab('sideTabs', tab); saveSettings();
+  if (tab === 'stats') { statsDirty = true; sizeCharts(); }
+  if (tab === 'trophies') renderTrophies();
+  if (tab === 'lb') renderLB();
+  if (tab === 'chat') { net.unread = 0; renderBadge(); renderChat(true); }
+}
+
+function markSeg(el, value) { for (const b of el.children) b.setAttribute('aria-checked', b.dataset.v === String(value)); }
+
+// ================= drawing =================
+let TOKC = {};
+function draw(now, dt) {
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, cv.width, cv.height);
+  let ox = 0, oy = 0;
+  if (shake > 0.2) { ox = (rand() - 0.5) * 2 * shake; oy = (rand() - 0.5) * 2 * shake; shake *= Math.exp(-dt / 140); } else shake = 0;
+  ctx.setTransform(1, 0, 0, 1, ox * S, oy * S);
+  ctx.drawImage(stat, 0, 0);
+  ctx.setTransform(S, 0, 0, S, ox * S, oy * S);
+
+  // pegs lit up by a bounce
+  const gold = TOKC.gold;
+  for (const [key, t0] of glow) {
+    const e = now - t0;
+    if (e > 380) { glow.delete(key); continue; }
+    const r = key >> 6, i = key & 63, x = pegX(r, i), y = rowY(r), a = 1 - e / 380;
+    ctx.globalAlpha = 0.4 * a; ctx.fillStyle = gold;
+    ctx.beginPath(); ctx.arc(x, y, G.PEG_R * 2.8, 0, TAU); ctx.fill();
+    ctx.globalAlpha = a;
+    ctx.beginPath(); ctx.arc(x, y, G.PEG_R + 0.5, 0, TAU); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  // sparks
+  let lastFs = '';
+  for (const p of sparks) {
+    ctx.globalAlpha = Math.max(0, 1 - p.age / p.life);
+    if (p.fs !== lastFs) { lastFs = p.fs; ctx.fillStyle = p.fs; }
+    ctx.fillRect(p.x - p.r, p.y - p.r, p.r * 2, p.r * 2);
+  }
+  ctx.globalAlpha = 1;
+
+  // buckets
+  const bm = boostMult();
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const bks = bucketSprites(bm), BP = 2;
+  for (let k = 0; k < NB; k++) {
+    const e = now - bucketHit[k];
+    const off = e < 320 ? Math.sin(e / 320 * Math.PI) * 6 : 0;
+    const x = bucketX(k) - G.BK_W / 2, y = G.BK_Y + off;
+    ctx.drawImage(bks[k], x - BP, y - BP, G.BK_W + BP * 2, G.BK_H + BP * 2);
+    if (e < 420) { ctx.fillStyle = `rgba(255,255,255,${0.55 * (1 - e / 420)})`; rrect(ctx, x, y, G.BK_W, G.BK_H - 3, 5); ctx.fill(); }
+  }
+
+  // balls
+  const trails = settings.trails && !RM;
+  for (const b of balls) {
+    const [x, y] = ballPos(b);
+    const hue = (b.id + (now / 90 | 0)) % 12;
+    const sp = sprite(b.skin, hue), hs = sp.half;
+    const look = skinLook(b.skin, hue);
+    if (trails) {
+      b.trail.push(x, y);
+      if (b.trail.length > 16) b.trail.splice(0, 2);
+      const n = b.trail.length / 2;
+      ctx.fillStyle = look.fs;
+      for (let j = 0; j < n - 1; j++) {
+        const f = (j + 1) / n;
+        ctx.globalAlpha = 0.28 * f;
+        ctx.beginPath(); ctx.arc(b.trail[j * 2], b.trail[j * 2 + 1], G.BALL_R * (0.35 + 0.5 * f), 0, TAU); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      if (SKINS[b.skin] && SKINS[b.skin].embers && sparks.length < 300 && rand() < 0.5) {
+        sparks.push({ x: x + (rand() - 0.5) * 4, y, vx: (rand() - 0.5) * 0.05, vy: -0.02 - rand() * 0.04, age: 0, life: 380, fs: rand() < 0.5 ? 'rgb(255,200,80)' : 'rgb(255,90,30)', r: 1 + rand() * 1.5 });
+      }
+    }
+    if (b.rig) {
+      ctx.strokeStyle = b.rig === 'lucky' ? 'rgba(255,236,140,.8)' : 'rgba(190,80,255,.85)'; ctx.lineWidth = 1.5;
+      ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.arc(x, y, G.BALL_R * 1.7, now / 300, now / 300 + TAU); ctx.stroke(); ctx.setLineDash([]);
+    }
+    if (b.susp && b.seg >= ROWS - SUSPENSE_ROWS) {
+      const pulse = 0.5 + 0.5 * Math.sin(now / 80);
+      ctx.strokeStyle = `rgba(255,197,61,${0.45 + 0.45 * pulse})`; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(x, y, G.BALL_R * 2 + pulse * 4, 0, TAU); ctx.stroke();
+    }
+    ctx.drawImage(sp, x - hs, y - hs, hs * 2, hs * 2);
+  }
+
+  // payout pop-ups
+  ctx.font = G.compact ? `700 28px ${FONT_BODY}` : `700 15px ${FONT_BODY}`;
+  for (let i = floats.length - 1; i >= 0; i--) {
+    const f = floats[i], e = now - f.t0;
+    if (e > 900) { floats.splice(i, 1); continue; }
+    ctx.globalAlpha = 1 - e / 900;
+    ctx.fillStyle = f.kind === 'win' ? gold : f.kind === 'loss' ? TOKC.bad : TOKC.muted;
+    ctx.fillText(f.text, f.x, f.y - e * (G.compact ? 0.09 : 0.05));
+  }
+  ctx.globalAlpha = 1;
+
+  // confetti
+  for (const p of confetti) {
+    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+    ctx.globalAlpha = Math.max(0, 1 - p.age / p.life);
+    ctx.fillStyle = p.c; ctx.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2);
+    ctx.restore();
+  }
+  ctx.globalAlpha = 1;
+}
+
+function updateParticles(dt) {
+  for (let i = confetti.length - 1; i >= 0; i--) {
+    const p = confetti[i];
+    p.vy += 0.0016 * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.rot += p.vr * dt; p.age += dt;
+    if (p.age > p.life || p.y > G.H + 20) confetti.splice(i, 1);
+  }
+  for (let i = sparks.length - 1; i >= 0; i--) {
+    const p = sparks[i];
+    p.vy += 0.0006 * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.age += dt;
+    if (p.age > p.life) sparks.splice(i, 1);
+  }
+}
+
+let balText = '';
+function tweenBalance(dt) {
+  if (shownBal === state.balance) return;
+  const d = state.balance - shownBal;
+  shownBal = Math.abs(d) < 2 ? state.balance : shownBal + d * Math.min(1, dt / 90);
+  const txt = money(Math.round(shownBal));
+  if (txt !== balText) { balText = txt; balEl.textContent = txt; }
+}
+
+// ================= stats charts =================
+let statsDirty = true, statsT = 0;
+const spark = $('spark'), histo = $('histo');
+function sizeCharts() {
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  for (const c of [spark, histo]) {
+    const w = c.clientWidth, h = c.clientHeight;
+    if (!w) continue;
+    c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
+    c.dpr = dpr;
+  }
+  statsDirty = true;
+}
+function drawCharts() {
+  if (settings.sideTab !== 'stats' || !spark.clientWidth) return;
+  // balance line
+  {
+    const c = spark.getContext('2d'), dpr = spark.dpr || 1, w = spark.width / dpr, h = spark.height / dpr;
+    c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, w, h);
+    const s = state.series.length > 1 ? state.series : [START, state.balance];
+    let lo = Math.min(...s), hi = Math.max(...s);
+    if (hi - lo < 100) { hi += 50; lo -= 50; }
+    const padT = 16, padB = 16, X = i => 6 + i / (s.length - 1) * (w - 12), Y = v => padT + (1 - (v - lo) / (hi - lo)) * (h - padT - padB);
+    c.font = `600 11px ${FONT_BODY}`; c.fillStyle = TOKC.muted; c.textBaseline = 'top'; c.textAlign = 'left';
+    c.fillText('high ' + money(hi), 8, 3); c.textBaseline = 'bottom'; c.fillText('low ' + money(lo), 8, h - 2);
+    if (START > lo && START < hi) { c.strokeStyle = 'rgba(158,165,218,.35)'; c.setLineDash([3, 4]); c.beginPath(); c.moveTo(0, Y(START)); c.lineTo(w, Y(START)); c.stroke(); c.setLineDash([]); }
+    const grad = c.createLinearGradient(0, padT, 0, h);
+    grad.addColorStop(0, 'rgba(255,197,61,.35)'); grad.addColorStop(1, 'rgba(255,197,61,0)');
+    c.beginPath(); c.moveTo(X(0), Y(s[0]));
+    for (let i = 1; i < s.length; i++) c.lineTo(X(i), Y(s[i]));
+    c.lineTo(X(s.length - 1), h); c.lineTo(X(0), h); c.closePath(); c.fillStyle = grad; c.fill();
+    c.beginPath(); c.moveTo(X(0), Y(s[0]));
+    for (let i = 1; i < s.length; i++) c.lineTo(X(i), Y(s[i]));
+    c.strokeStyle = TOKC.gold; c.lineWidth = 2; c.lineJoin = 'round'; c.stroke();
+    c.fillStyle = TOKC.gold; c.beginPath(); c.arc(X(s.length - 1), Y(s[s.length - 1]), 3.5, 0, TAU); c.fill();
+    $('sparkNote').textContent = s.length > 2 ? `last ${s.length - 1} drops` : 'after each drop';
+  }
+  // bucket histogram vs binomial expectation
+  {
+    const c = histo.getContext('2d'), dpr = histo.dpr || 1, w = histo.width / dpr, h = histo.height / dpr;
+    c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, w, h);
+    const counts = state.buckets, total = counts.reduce((a, b) => a + b, 0);
+    const exp = PROB.map(p => p * total);
+    const top = Math.max(1, ...counts, ...exp);
+    const bw = (w - 8) / NB, base = h - 6, Y = v => base - v / top * (h - 16);
+    const cols = COLORS[state.risk];
+    for (let k = 0; k < NB; k++) {
+      if (!counts[k]) continue;
+      c.fillStyle = cols[k].fill;
+      const y = Y(counts[k]);
+      c.fillRect(4 + k * bw + 1, y, Math.max(1, bw - 2), base - y);
+    }
+    c.strokeStyle = TOKC.ink; c.lineWidth = 1.5; c.beginPath();
+    for (let k = 0; k < NB; k++) { const x = 4 + (k + 0.5) * bw; k ? c.lineTo(x, Y(exp[k])) : c.moveTo(x, Y(exp[k])); }
+    if (total) c.stroke();
+    c.fillStyle = TOKC.muted; c.font = `600 11px ${FONT_BODY}`; c.textAlign = 'center'; c.textBaseline = 'middle';
+    if (!total) c.fillText('Drop a ball to start the chart', w / 2, h / 2);
+    $('histoNote').textContent = total ? `${total.toLocaleString('en-US')} balls` : '';
+  }
+}
+
+// ================= trophies & skins ui =================
+function skinUnlocked(key) { return key === 'gold' || !!state.trophies[SKIN_TROPHY[key].id]; }
+function renderTrophies() {
+  const sl = $('skinList'); sl.innerHTML = '';
+  for (const [key, s] of Object.entries(SKINS)) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'skin'; b.setAttribute('role', 'radio');
+    b.setAttribute('aria-checked', settings.skin === key);
+    const open = skinUnlocked(key);
+    b.disabled = !open;
+    const look = skinLook(key, 0);
+    const bg = s.rainbow ? 'conic-gradient(#ff4f81,#ffc53d,#5ee391,#3fd9c4,#4fb6ff,#8b5cf6,#ff4f81)'
+      : `radial-gradient(circle at 35% 30%, ${look.stops[0]}, ${look.stops[1]} 40%, ${look.stops[2]})`;
+    b.innerHTML = `<i style="background:${bg}"></i>${esc(s.name)}${open ? '' : `<small>${esc(SKIN_TROPHY[key].name)}</small>`}`;
+    b.title = open ? `Use the ${s.name} ball` : `Unlock with the ${SKIN_TROPHY[key].name} trophy`;
+    b.addEventListener('click', () => { settings.skin = key; saveSettings(); renderTrophies(); });
+    sl.appendChild(b);
+  }
+  const tl = $('trophyList'); tl.innerHTML = '';
+  let won = 0;
+  for (const t of TROPHIES) {
+    const has = !!state.trophies[t.id]; if (has) won++;
+    const li = document.createElement('li');
+    li.className = has ? 'won' : '';
+    li.innerHTML = `<span class="medal">${has ? '★' : '?'}</span><div><b>${esc(t.name)}</b><span>${esc(t.desc)}${t.skin ? ` · unlocks the ${SKINS[t.skin].name} ball` : ''}</span></div>`;
+    tl.appendChild(li);
+  }
+  $('trophyCount').textContent = `Trophies · ${won} of ${TROPHIES.length}`;
+}
+
+// ================= tooltip =================
+let tipT = 0;
+function showTip(e) {
+  const r = cv.getBoundingClientRect();
+  const x = (e.clientX - r.left) / scale, y = (e.clientY - r.top) / scale;
+  const k = Math.floor((x - G.W / 2) / G.SP + 16);
+  if (y < G.BK_Y - 6 || y > G.BK_Y + G.BK_H + 6 || k < 0 || k >= NB) { tip.hidden = true; return; }
+  const m = multAt(state.risk, k), p = PROB[k];
+  const bm = boostMult();
+  tip.innerHTML = `<b>${longMult(m)}</b>${bm > 1 ? ` (${bm}× boost)` : ''} pays ${money(Math.round(state.bet * m * bm))} on a ${money(state.bet)} bet` +
+    `<span>Lands here ${pct(p)} of the time (1 in ${oneIn(p)})</span>`;
+  tip.hidden = false;
+  const w = tip.offsetWidth, bx = cv.offsetLeft + bucketX(k) * scale;
+  tip.style.left = Math.min(board.clientWidth - w / 2 - 6, Math.max(w / 2 + 6, bx)) + 'px';
+  tip.style.top = cv.offsetTop + G.BK_Y * scale + 'px';
+  clearTimeout(tipT);
+  if (e.pointerType === 'touch') tipT = setTimeout(() => { tip.hidden = true; }, 2600);
+}
+
+// ================= main loop =================
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(100, Math.max(0, now - last));
+  last = now;
+  runAuto(dt);
+  let landed = false;
+  for (let i = balls.length - 1; i >= 0; i--) {
+    if (stepBall(balls[i], dt, now)) { balls.splice(i, 1); landed = true; }
+  }
+  if (landed) afterLanding();
+  tweenBalance(dt);
+  updateParticles(dt);
+  if (now < quakeUntil) shake = Math.max(shake, 11);
+  draw(now, dt);
+  if (hudDirty) { hudDirty = false; hudNow(); }
+  flushHistory();
+  if (statsDirty && now - statsT > 250) { statsDirty = false; statsT = now; drawCharts(); }
+  requestAnimationFrame(frame);
+}
+
+// ================= persistence =================
+function snapshot() {
+  const out = Object.assign({}, state);
+  if (!ONLINE) out.balance = state.balance + inFlightBets();   // balls still falling get refunded
+  out.dropped = state.dropped - balls.length;
+  out.wagered = state.wagered - inFlightBets();
+  return out;
+}
+function save() { lsSet(PROFILE_KEY, snapshot()); }
+let saveT = 0;
+function scheduleSave() { if (!saveT) saveT = setTimeout(() => { saveT = 0; save(); }, 700); }
+function applyProfile(d) {
+  if (!d || typeof d !== 'object') return;
+  const num = v => (Number.isFinite(v) ? v : null);
+  for (const k of ['balance', 'bet', 'dropped', 'wagered', 'won', 'expected', 'profit', 'best', 'bestWin', 'autoDrops', 'highDrops']) {
+    if (num(d[k]) !== null) state[k] = Math.max(k === 'profit' ? -Infinity : 0, d[k]);
+  }
+  state.bet = Math.max(MIN_BET, Math.round(state.bet));
+  if (RISKS.includes(d.risk)) state.risk = d.risk;
+  if (typeof d.wasLow === 'boolean') state.wasLow = d.wasLow;
+  if (Array.isArray(d.history)) state.history = d.history.filter(Number.isFinite).slice(0, HIST_MAX);
+  if (Array.isArray(d.series) && d.series.length) state.series = d.series.filter(Number.isFinite).slice(-SERIES_MAX);
+  if (Array.isArray(d.buckets) && d.buckets.length === NB) state.buckets = d.buckets.map(v => (Number.isFinite(v) ? v : 0));
+  if (d.trophies && typeof d.trophies === 'object') state.trophies = Object.assign({}, d.trophies);
+}
+function migrateV1() {
+  const v1 = lsGet('plinko32.v1', null);
+  if (!v1) return null;
+  return { balance: v1.balance, bet: v1.bet, risk: v1.risk, dropped: v1.dropped, profit: v1.profit, best: v1.best,
+    bestWin: Math.max(0, (v1.bestWin || 0) - (v1.bet || 0)), history: v1.hist };
+}
+
+// ================= online: api, identity, leaderboard =================
+async function api(path, body) {
+  let r;
+  try {
+    r = await fetch('/api/' + path, {
+      method: body ? 'POST' : 'GET',
+      headers: Object.assign({ 'Content-Type': 'application/json' }, net.token ? { 'X-Plinko-Token': net.token } : {}),
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  } catch (e) { throw Object.assign(new Error('offline'), { network: true }); }
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw Object.assign(new Error(j.error || 'Something went wrong.'), { code: j.code, status: r.status, ms: j.ms });
+  return j;
+}
+
+function applyMe(me, keepLocal) {
+  net.me = me; net.lastMe = me;
+  state.balance = me.balance;
+  state.dropped = me.drops; state.wagered = me.wagered; state.won = me.won; state.profit = me.profit;
+  state.best = me.bestMult; state.bestWin = me.bestWin;
+  if (!keepLocal) { shownBal = state.balance; balEl.textContent = money(state.balance); }
+  setBet(state.bet, true);
+  hud(); renderLB();
+}
+async function refreshMe(force) {
+  if (!ONLINE || !net.token) return;
+  if (!force && (balls.length || pending)) return;
+  try { const r = await api('me'); net.config = r.config || net.config; applyBoost(net.config.boost); applyMe(r.me); }
+  catch (e) { if (e.code === 'auth') { net.token = null; lsSet(TOKEN_KEY, null); openJoin(); } }
+}
+
+let joinColor = PLAYER_COLORS[0];
+function openJoin(msg) {
+  const dlg = $('joinDlg');
+  $('joinTitle').textContent = net.me ? 'Change name or color' : 'Join the table';
+  $('joinIntro').textContent = net.me ? 'Your balance and stats stay the same.' : 'Everyone on this Wi‑Fi shares one leaderboard. You start with $100.';
+  $('joinBtn').textContent = net.me ? 'Save' : 'Join';
+  $('joinName').value = net.me ? net.me.name : lsGet('plinko32.lan.name', '');
+  joinColor = net.me ? net.me.color : (lsGet('plinko32.lan.color', null) || PLAYER_COLORS[Math.floor(rand() * PLAYER_COLORS.length)]);
+  const sw = $('swatches'); sw.innerHTML = '';
+  for (const c of PLAYER_COLORS) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.setAttribute('role', 'radio'); b.setAttribute('aria-label', 'Color ' + c);
+    b.style.background = c; b.setAttribute('aria-checked', c === joinColor);
+    b.addEventListener('click', () => { joinColor = c; for (const x of sw.children) x.setAttribute('aria-checked', x === b); });
+    sw.appendChild(b);
+  }
+  const err = $('joinErr'); err.hidden = !msg; err.textContent = msg || '';
+  if (!dlg.open) dlg.showModal();
+  setTimeout(() => $('joinName').focus(), 50);
+}
+async function submitJoin(e) {
+  e.preventDefault();
+  const name = $('joinName').value.trim(), err = $('joinErr');
+  if (!name) { err.hidden = false; err.textContent = 'Pick a name first.'; return; }
+  $('joinBtn').disabled = true;
+  try {
+    const wasJoined = !!net.me;
+    const r = await api('join', { name, color: joinColor });
+    net.token = r.token; lsSet(TOKEN_KEY, r.token); lsSet('plinko32.lan.name', name); lsSet('plinko32.lan.color', joinColor);
+    applyMe(r.me);
+    $('joinDlg').close();
+    connectEvents();
+    if (!wasJoined) notice(`<b>Welcome, ${esc(r.me.name)}!</b> You have ${money(r.me.balance)}. Good luck.`, 'gold');
+    fillPlayerSettings();
+  } catch (x) {
+    err.hidden = false;
+    err.textContent = x.network ? "Can't reach the game server. Make sure you're on the same Wi‑Fi as the host." : x.message;
+  } finally { $('joinBtn').disabled = false; }
+}
+
+function connectEvents() {
+  if (net.es) net.es.close();
+  const es = new EventSource('/api/events' + (net.me ? '?id=' + encodeURIComponent(net.me.id) : ''));
+  net.es = es;
+  es.addEventListener('open', () => { net.connected = true; renderLB(); });
+  es.addEventListener('error', () => { net.connected = false; renderLB(); });
+  es.addEventListener('board', e => { net.board = JSON.parse(e.data); renderLB(); });
+  es.addEventListener('config', e => { net.config = JSON.parse(e.data); applyBoost(net.config.boost); setBet(state.bet, true); hud(); });
+  es.addEventListener('admin', e => onAdmin(JSON.parse(e.data)));
+  es.addEventListener('hello', e => {
+    const b = JSON.parse(e.data).game;
+    if (net.build == null) net.build = b;
+    else if (b !== net.build) { save(); location.reload(); }    // the game was updated: load the new version
+  });
+  es.addEventListener('hit', e => onHit(JSON.parse(e.data)));
+  es.addEventListener('feed', e => { const d = JSON.parse(e.data); if (d.type === 'chat' || d.type === 'msg') addChat(d); });
+  es.addEventListener('chatclear', () => { net.chat = net.chat.filter(c => c.type !== 'chat'); renderChat(); });
+  es.addEventListener('season', () => {
+    stopAuto(''); balls = []; floats = []; net.lastMe = null;
+    state.series = [START]; state.buckets = new Array(NB).fill(0); state.history = []; state.expected = 0; state.autoDrops = 0; state.highDrops = 0;
+    renderHistory(); refreshMe(true); statsDirty = true;
+    notice('<b>New season!</b> The host reset the leaderboard. Everyone is back to $100.', 'gold', 6000);
+  });
+  es.addEventListener('removed', e => {
+    const d = JSON.parse(e.data);
+    if (net.me && d.id === net.me.id) {
+      stopAuto(''); balls = [];
+      net.token = null; net.me = null; lsSet(TOKEN_KEY, null);
+      hud(); openJoin('The host removed you from the table. You can join again with a new name.');
+    }
+  });
+}
+
+// ---------- the host messing with you ----------
+function onAdmin(d) {
+  if (d.to !== 'all' && (!net.me || d.to !== net.me.id)) return;
+  if (typeof d.delta === 'number' && d.delta) {
+    // shift by the server's exact difference so balls that are still falling keep adding up
+    state.balance = Math.max(0, state.balance + d.delta);
+    balFlash(d.delta > 0 ? 'up' : 'down', 900);
+    if (d.delta < 0) shake = Math.max(shake, settings.shake && !RM ? 5 : 0);
+  }
+  if (d.me && newerMe(d.me)) net.lastMe = d.me;
+  if (d.me && net.me && (d.me.name !== net.me.name || d.me.color !== net.me.color)) { net.me.name = d.me.name; net.me.color = d.me.color; fillPlayerSettings(); }
+  if (d.prank) prank(d.prank, d.ms || 20000);
+  if (typeof d.freezeMs === 'number') {
+    net.frozenUntil = d.freezeMs ? Date.now() + d.freezeMs : 0;
+    if (d.freezeMs) stopAuto('Frozen by the host');
+  }
+  if (d.text) showHostMsg(d.text, d.message);
+  if (!balls.length && !pending && net.lastMe) applyMe(net.lastMe, true);
+  hud(); renderLB();
+}
+let hostMsgT = 0, quakeUntil = 0;
+const PRANK_CLASS = { flip: 'prank-flip', mirror: 'prank-mirror', dark: 'prank-dark', disco: 'prank-disco' };
+const prankT = {};
+function prank(kind, ms) {
+  if (kind === 'quake') { if (!RM) quakeUntil = performance.now() + Math.min(ms, 6000); buzz([200, 80, 200, 80, 300]); return; }
+  const cls = PRANK_CLASS[kind]; if (!cls) return;
+  cv.classList.add(cls);
+  clearTimeout(prankT[kind]); prankT[kind] = setTimeout(() => cv.classList.remove(cls), ms);
+}
+function showHostMsg(text, isMessage) {
+  const el = $('hostMsg'), ms = Math.max(3500, Math.min(9000, 3000 + text.length * 45));
+  $('hostMsgCap').textContent = isMessage ? 'Message from the host' : 'The host strikes';
+  $('hostMsgText').textContent = text;
+  el.style.animationDuration = ms + 'ms';
+  el.hidden = false; el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+  notice(`<b>Host:</b> ${esc(text)}`, 'gold', ms);
+  clearTimeout(hostMsgT); hostMsgT = setTimeout(() => { el.hidden = true; }, ms);
+  voice(note(10), 0.18, { type: 'triangle', vol: 0.06 }); voice(note(13), 0.3, { type: 'triangle', vol: 0.06, when: 0.12 });
+  buzz([30, 50, 30]);
+}
+function applyBoost(b) {
+  net.boost = b && b.ms > 0 ? { mult: b.mult, until: Date.now() + b.ms } : null;
+  renderBoost();
+}
+function renderBoost() {
+  const chip = $('boostChip'), bm = boostMult();
+  board.classList.toggle('boosting', bm > 1);
+  chip.hidden = bm <= 1;
+  if (bm > 1) { const s = Math.ceil((net.boost.until - Date.now()) / 1000); chip.textContent = `${bm}× payouts · ${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; }
+}
+
+// ---------- chat between players ----------
+const mobileLayout = () => !matchMedia('(min-width: 900px)').matches;
+const chatVisible = () => $('chatDlg').open || (settings.sideTab === 'chat' && !mobileLayout());
+function addChat(e, quiet) {
+  if (e.type === 'msg' && e.toId && (!net.me || e.toId !== net.me.id)) return;   // someone else's private note from the host
+  net.chat.push(e);
+  if (net.chat.length > 80) net.chat.shift();
+  const mine = e.type === 'chat' && net.me && e.id === net.me.id;
+  if (!quiet && !mine && !chatVisible()) {
+    net.unread++;
+    if (e.type === 'chat') notice(`<b style="color:${esc(e.color)}">${esc(e.name)}:</b> ${esc(e.text)}`, '', 3800);
+  }
+  renderChat(mine); renderBadge();
+}
+function renderChat(forceBottom) {
+  const ul = $('chatList');
+  const nearBottom = ul.scrollHeight - ul.scrollTop - ul.clientHeight < 80;
+  if (!net.chat.length) { ul.innerHTML = '<li class="empty">No messages yet. Say hi to the table.</li>'; return; }
+  ul.innerHTML = net.chat.map(e => {
+    if (e.type === 'msg') return `<li class="host"><span class="who" style="color:var(--gold)">Host${e.toId ? ' · just to you' : ''}<span class="when">${ago(e.at)}</span></span>${esc(e.text)}</li>`;
+    const mine = net.me && e.id === net.me.id;
+    return `<li class="${mine ? 'mine' : ''}"><span class="who" style="color:${esc(e.color)}">${mine ? 'You' : esc(e.name)}<span class="when">${ago(e.at)}</span></span>${esc(e.text)}</li>`;
+  }).join('');
+  if (nearBottom || forceBottom || !renderChat.done) ul.scrollTop = ul.scrollHeight;
+  renderChat.done = true;
+}
+function renderBadge() {
+  if (chatVisible()) net.unread = 0;
+  const n = net.unread > 99 ? '99+' : String(net.unread);
+  for (const id of ['chatBadge', 'mbChatBadge']) { $(id).hidden = !net.unread; $(id).textContent = n; }
+}
+async function sendChat(e) {
+  e.preventDefault();
+  const input = $('chatIn'), err = $('chatErr'), text = input.value.trim();
+  if (!text) return;
+  err.hidden = true; input.value = '';
+  try { await api('chat', { text }); }
+  catch (x) { input.value = text; err.hidden = false; err.textContent = x.network ? "Can't reach the game server." : x.message; }
+}
+async function loadChatHistory() {
+  try {
+    const r = await api('feed');
+    net.chat = [];
+    for (const e of r.feed) if (e.type === 'chat' || e.type === 'msg') addChat(e, true);
+    renderChat(true);
+  } catch (e) {}
+}
+// phones: open chat in a sheet by moving the chat panel into the dialog, and back when it closes
+function openChatSheet() {
+  const pane = $('spane-chat');
+  $('chatDlgBody').appendChild(pane); pane.hidden = false;
+  $('chatDlg').showModal();
+  net.unread = 0; renderBadge(); renderChat(true);
+}
+function closeChatSheet() {
+  const pane = $('spane-chat');
+  $('spane-lb').after(pane);
+  setSideTab(settings.sideTab);
+}
+
+function onHit(h) {
+  net.feed.unshift(h);
+  if (net.feed.length > 15) net.feed.length = 15;
+  renderFeed();
+  const mine = net.me && h.id === net.me.id;
+  if (!mine && h.mult >= 25) {
+    const el = $('feedPop');
+    el.innerHTML = `<span class="who">${esc(h.name)}</span> hit ${longMult(h.mult)} · ${signed(h.win)}`;
+    el.hidden = false; el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+    clearTimeout(onHit.t); onHit.t = setTimeout(() => { el.hidden = true; }, 3000);
+    if (h.mult >= 250) voice(note(13), 0.3, { type: 'triangle', vol: 0.03 });
+  }
+}
+function renderFeed() {
+  const ul = $('feedList');
+  if (!net.feed.length) { ul.innerHTML = '<li class="empty">Hits of 10× or more from anyone show up here</li>'; return; }
+  ul.innerHTML = net.feed.map(h => `<li><span class="dot" style="background:${esc(h.color)}"></span>` +
+    `<span class="what"><b>${esc(h.name)}</b> hit ${longMult(h.mult)}${h.rigged ? ' (host luck)' : ''}${h.boost > 1 ? ` (${h.boost}× boost)` : ''} · ${signed(h.win)}</span><span class="when">${ago(Math.min(Date.now(), h.at))}</span></li>`).join('');
+}
+
+const LB_SORTS = {
+  richest: { key: p => p.balance, fmt: p => money(p.balance), gap: (a, b) => `${money(a.balance - b.balance)} behind ${esc(a.name)}` },
+  hit:     { key: p => p.bestMult * 1e12 + Math.max(0, p.bestWin), fmt: p => (p.bestMult ? longMult(p.bestMult) : '—'), gap: a => `${esc(a.name)} is next with a ${longMult(a.bestMult)} hit` },
+  win:     { key: p => p.bestWin, fmt: p => (p.bestWin > 0 ? signed(p.bestWin) : '—'), gap: (a, b) => `${money(a.bestWin - b.bestWin)} short of ${esc(a.name)}'s best win` },
+  balls:   { key: p => p.drops, fmt: p => p.drops.toLocaleString('en-US'), gap: (a, b) => `${(a.drops - b.drops).toLocaleString('en-US')} balls behind ${esc(a.name)}` },
+};
+function rankedPlayers(sort) {
+  const list = net.board.players.map(p => (net.me && p.id === net.me.id)
+    ? Object.assign({}, p, { balance: state.balance + inFlightBets(), bestMult: state.best, bestWin: state.bestWin, drops: state.dropped, online: net.connected })
+    : p);
+  const key = LB_SORTS[sort].key;
+  return list.sort((a, b) => key(b) - key(a) || a.name.localeCompare(b.name));
+}
+let lbT = 0;
+function renderLB() {
+  if (!ONLINE) return;
+  const chip = $('rankChip');
+  if (!net.board || !net.me) {
+    chip.hidden = true;
+    $('lbYou').textContent = net.me ? 'Connecting to the table…' : 'Join the table to get on the leaderboard.';
+    return;
+  }
+  const now = performance.now();
+  if (now - lbT < 200) { clearTimeout(renderLB.t); renderLB.t = setTimeout(renderLB, 220); return; }
+  lbT = now;
+
+  // rank chip always uses "Richest"
+  const rich = rankedPlayers('richest'), myRich = rich.findIndex(p => p.id === net.me.id) + 1;
+  chip.hidden = false;
+  chip.classList.toggle('off', !net.connected);
+  chip.innerHTML = `<span class="live"></span><b>#${myRich || '–'}</b> of ${rich.length}`;
+  if (net.lastRank && myRich && myRich < net.lastRank) {
+    chip.classList.remove('bump'); void chip.offsetWidth; chip.classList.add('bump');
+    if (myRich <= 3 && Date.now() - (renderLB.noted || 0) > 10000) { renderLB.noted = Date.now(); notice(myRich === 1 ? '<b>You took first place!</b>' : `You moved up to <b>#${myRich}</b>`, 'gold', 2200); }
+  }
+  net.lastRank = myRich;
+
+  if (settings.sideTab !== 'lb') return;
+  const sort = settings.lbSort, S_ = LB_SORTS[sort];
+  const list = rankedPlayers(sort), idx = list.findIndex(p => p.id === net.me.id);
+  const you = list[idx];
+  const youEl = $('lbYou');
+  if (idx < 0) youEl.textContent = 'Getting you a seat…';
+  else if (!net.connected) youEl.innerHTML = '<b>Reconnecting…</b> Check that you are still on the same Wi‑Fi.';
+  else if (list.length === 1) youEl.innerHTML = "You're the only one here. Tap <b>Invite friends</b> to fill the table.";
+  else if (idx === 0) youEl.innerHTML = `<b>You're in first place.</b> ${esc(list[1].name)} is chasing you.`;
+  else youEl.innerHTML = `You're <b>#${idx + 1} of ${list.length}</b>. ${S_.gap(list[idx - 1], you)}.`;
+
+  const rows = [];
+  const row = (p, i) => `<li class="${p.id === net.me.id ? 'me' : ''}"><span class="rk">${i + 1}</span><span class="dot${p.online ? '' : ' off'}" style="background:${esc(p.color)}" title="${p.online ? 'Online' : 'Offline'}"></span>` +
+    `<span class="nm">${esc(p.name)}${p.id === net.me.id ? '<small>you</small>' : ''}</span><span class="val">${S_.fmt(p)}</span></li>`;
+  list.slice(0, 10).forEach((p, i) => rows.push(row(p, i)));
+  if (idx >= 10) {
+    if (idx > 11) rows.push('<li class="gap">⋯</li>');
+    for (let i = Math.max(10, idx - 1); i <= Math.min(list.length - 1, idx + 1); i++) rows.push(row(list[i], i));
+  }
+  $('lbList').innerHTML = rows.join('');
+  markSeg($('lbSort'), sort);
+  const online = list.filter(p => p.online).length;
+  $('lbMeta').textContent = `Season ${net.board.season} · ${online} online · ${net.board.totalDrops.toLocaleString('en-US')} balls dropped at this table`;
+}
+
+async function openInvite() {
+  const dlg = $('inviteDlg');
+  let url = location.origin;
+  if (/^(localhost|127\.|\[::1\])/.test(location.hostname)) {
+    try { net.info = await api('info'); if (net.info.urls[0]) url = net.info.urls[0]; } catch (e) {}
+  }
+  $('inviteUrl').textContent = url;
+  const box = $('qrBox');
+  box.innerHTML = '';
+  try {
+    if (!window.qrcode) await new Promise((res, rej) => { const s = document.createElement('script'); s.src = '/vendor/qrcode.js'; s.onload = res; s.onerror = rej; document.head.appendChild(s); });
+    const qr = window.qrcode(0, 'M'); qr.addData(url); qr.make();
+    box.innerHTML = qr.createSvgTag(6, 2);
+  } catch (e) { box.hidden = true; }
+  dlg.showModal();
+}
+
+function fillPlayerSettings() {
+  if (ONLINE) {
+    $('playerTitle').textContent = 'Player';
+    $('playerText').innerHTML = net.me ? `Playing as <b style="color:${esc(net.me.color)}">${esc(net.me.name)}</b> in season ${net.board ? net.board.season : 1}. Only the host can reset the leaderboard.` : 'Not joined yet.';
+    $('changeNameBtn').hidden = false;
+    $('resetBtn').hidden = true;
+  } else {
+    $('playerText').textContent = 'Everything is saved in this browser.';
+  }
+}
+
+// ================= settings dialog =================
+function fillSettings() {
+  $('setSound').checked = settings.sound;
+  $('setVolume').value = Math.round(settings.volume * 100); $('volOut').textContent = Math.round(settings.volume * 100) + '%';
+  $('setPlinks').checked = settings.plinks;
+  markSeg($('setSpeed'), settings.speed);
+  for (const [id, key] of [['setTrails', 'trails'], ['setSparks', 'sparks'], ['setSuspense', 'suspense'], ['setShake', 'shake'], ['setConfetti', 'confetti'], ['setHaptics', 'haptics'], ['setWake', 'wake']]) $(id).checked = settings[key];
+  $('hapticsRow').hidden = !('vibrate' in navigator && matchMedia('(pointer: coarse)').matches);
+  $('wakeRow').hidden = !('wakeLock' in navigator);
+  $('phoneGroup').hidden = $('hapticsRow').hidden && $('wakeRow').hidden;
+  fillPlayerSettings();
+}
+function fillAuto() {
+  speedIn.value = settings.autoSpeed;
+  speedOut.textContent = `${settings.autoSpeed} ball${settings.autoSpeed === 1 ? '' : 's'}/sec`;
+  countIn.value = settings.autoCount;
+  markSeg($('onWinSeg'), settings.onWin); markSeg($('onLossSeg'), settings.onLoss);
+  $('onWinPct').value = settings.onWinPct; $('onLossPct').value = settings.onLossPct;
+  $('onWinPctBox').classList.toggle('off', settings.onWin !== 'increase');
+  $('onLossPctBox').classList.toggle('off', settings.onLoss !== 'increase');
+  $('onWinPct').disabled = settings.onWin !== 'increase'; $('onLossPct').disabled = settings.onLoss !== 'increase';
+  if (document.activeElement !== $('stopProfit')) $('stopProfit').value = settings.stopProfit ? (settings.stopProfit / 100).toFixed(2) : '0';
+  if (document.activeElement !== $('stopLoss')) $('stopLoss').value = settings.stopLoss ? (settings.stopLoss / 100).toFixed(2) : '0';
+  $('stopHit').value = settings.stopHit;
+  const bits = [];
+  if (settings.onWin === 'increase' && settings.onWinPct) bits.push(`+${settings.onWinPct}% on win`);
+  if (settings.onLoss === 'increase' && settings.onLossPct) bits.push(`+${settings.onLossPct}% on loss`);
+  if (settings.stopProfit || settings.stopLoss || settings.stopHit) bits.push('stops set');
+  $('advSummary').textContent = bits.join(' · ');
+}
+
+// ================= wiring =================
+function wire() {
+  const typing = t => t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT');
+  dropBtn.addEventListener('click', () => { audio(); drop('manual'); });
+  $('mbDrop').addEventListener('click', () => { audio(); drop('manual'); });
+  autoBtn.addEventListener('click', toggleAuto);
+  $('mbAuto').addEventListener('click', toggleAuto);
+  document.addEventListener('pointerdown', audio);
+
+  window.addEventListener('keydown', e => {
+    if (typing(e.target) || e.metaKey || e.ctrlKey || e.altKey || document.querySelector('dialog[open]')) return;
+    audio();
+    if (e.code === 'Space') { e.preventDefault(); drop('manual'); }
+    else if (e.repeat) return;
+    else if (e.key === 'a' || e.key === 'A') toggleAuto();
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setBet(state.bet * 2); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); setBet(Math.floor(state.bet / 2)); }
+    else if (e.key === '1' || e.key === '2' || e.key === '3') setRisk(RISKS[+e.key - 1]);
+    else if (e.key === 'm' || e.key === 'M') setSound(!settings.sound);
+  });
+  window.addEventListener('keyup', e => { if (e.code === 'Space' && !typing(e.target)) e.preventDefault(); });
+
+  betIn.addEventListener('change', () => setBet(parseMoney(betIn.value)));
+  betIn.addEventListener('blur', () => setBet(parseMoney(betIn.value)));
+  betIn.addEventListener('keydown', e => { if (e.key === 'Enter') betIn.blur(); });
+  $('betHalf').addEventListener('click', () => setBet(Math.floor(state.bet / 2)));
+  $('betDouble').addEventListener('click', () => setBet(state.bet * 2));
+  $('betMax').addEventListener('click', () => setBet(maxBet()));
+  $('mbHalf').addEventListener('click', () => setBet(Math.floor(state.bet / 2)));
+  $('mbDouble').addEventListener('click', () => setBet(state.bet * 2));
+  riskSeg.addEventListener('click', e => { const b = e.target.closest('button[data-risk]'); if (b && !b.disabled) setRisk(b.dataset.risk); });
+
+  $('deskTabs').addEventListener('click', e => { const b = e.target.closest('[role=tab]'); if (b) setDeskTab(b.dataset.tab); });
+  $('sideTabs').addEventListener('click', e => { const b = e.target.closest('[role=tab]'); if (b) setSideTab(b.dataset.tab); });
+  $('lbSort').addEventListener('click', e => { const b = e.target.closest('button[data-v]'); if (b) { settings.lbSort = b.dataset.v; saveSettings(); lbT = 0; renderLB(); } });
+  $('rankChip').addEventListener('click', () => { setSideTab('lb'); $('spane-lb').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+
+  // auto settings
+  speedIn.addEventListener('input', () => { settings.autoSpeed = +speedIn.value; fillAuto(); saveSettings(); });
+  countIn.addEventListener('change', () => { settings.autoCount = Math.max(0, Math.floor(+countIn.value || 0)); fillAuto(); saveSettings(); });
+  for (const [segId, key] of [['onWinSeg', 'onWin'], ['onLossSeg', 'onLoss']]) {
+    $(segId).addEventListener('click', e => { const b = e.target.closest('button[data-v]'); if (b) { settings[key] = b.dataset.v; fillAuto(); saveSettings(); } });
+  }
+  const pctIn = (id, key) => $(id).addEventListener('change', () => { settings[key] = Math.max(0, Math.min(500, Math.round(+$(id).value || 0))); fillAuto(); saveSettings(); });
+  pctIn('onWinPct', 'onWinPct'); pctIn('onLossPct', 'onLossPct');
+  $('stopHit').addEventListener('change', () => { settings.stopHit = Math.max(0, +$('stopHit').value || 0); fillAuto(); saveSettings(); });
+  for (const [id, key] of [['stopProfit', 'stopProfit'], ['stopLoss', 'stopLoss']]) {
+    $(id).addEventListener('change', () => { const v = parseMoney($(id).value); settings[key] = Number.isFinite(v) ? Math.max(0, v) : 0; fillAuto(); saveSettings(); });
+  }
+
+  // settings dialog
+  $('settingsBtn').addEventListener('click', () => { fillSettings(); $('settingsDlg').showModal(); });
+  soundBtn.addEventListener('click', () => { audio(); setSound(!settings.sound); });
+  $('setSound').addEventListener('change', e => { audio(); setSound(e.target.checked); });
+  $('setVolume').addEventListener('input', e => {
+    settings.volume = +e.target.value / 100; $('volOut').textContent = e.target.value + '%';
+    audio(); if (snd.master) snd.master.gain.value = settings.volume; saveSettings();
+  });
+  $('setVolume').addEventListener('change', () => voice(note(10), 0.2, { type: 'triangle', vol: 0.06 }));
+  $('setSpeed').addEventListener('click', e => { const b = e.target.closest('button[data-v]'); if (b) { settings.speed = b.dataset.v; markSeg($('setSpeed'), settings.speed); saveSettings(); } });
+  for (const [id, key] of [['setPlinks', 'plinks'], ['setTrails', 'trails'], ['setSparks', 'sparks'], ['setSuspense', 'suspense'], ['setShake', 'shake'], ['setConfetti', 'confetti'], ['setHaptics', 'haptics'], ['setWake', 'wake']]) {
+    $(id).addEventListener('change', e => { settings[key] = e.target.checked; saveSettings(); if (key === 'haptics' && e.target.checked) buzz(30); });
+  }
+  $('changeNameBtn').addEventListener('click', () => { $('settingsDlg').close(); openJoin(); });
+
+  let armT = 0;
+  const resetBtn = $('resetBtn'), resetLabel = resetBtn.textContent;
+  resetBtn.addEventListener('click', () => {
+    if (!resetBtn.classList.contains('arm')) {
+      resetBtn.classList.add('arm'); resetBtn.textContent = 'Click again to erase everything';
+      clearTimeout(armT); armT = setTimeout(() => { resetBtn.classList.remove('arm'); resetBtn.textContent = resetLabel; }, 3000);
+      return;
+    }
+    clearTimeout(armT); resetBtn.classList.remove('arm'); resetBtn.textContent = resetLabel;
+    stopAuto('');
+    balls = []; floats = []; confetti = []; sparks = []; glow.clear();
+    const bet = state.bet, risk = state.risk;
+    Object.assign(state, freshProfile(), { bet: Math.min(bet, START), risk });
+    settings.skin = 'gold'; saveSettings();
+    shownBal = START; balEl.textContent = money(START);
+    renderHistory(); renderTrophies(); setBet(state.bet); save(); statsDirty = true;
+    $('settingsDlg').close();
+    notice('Progress reset. You have $100.', '');
+  });
+
+  $('refillBtn').addEventListener('click', async () => {
+    if (ONLINE) {
+      try { const r = await api('refill', {}); applyMe(r.me); notice('Refilled to $100. The leaderboard counts it as a bust.', ''); }
+      catch (e) { notice(esc(e.message), 'warn'); refreshMe(true); }
+    } else {
+      state.balance = START; setBet(Math.min(state.bet, START)); save(); hud();
+    }
+  });
+
+  // online dialogs
+  $('joinForm').addEventListener('submit', submitJoin);
+  $('joinDlg').addEventListener('cancel', e => { if (!net.me) e.preventDefault(); });
+  $('inviteBtn').addEventListener('click', openInvite);
+  $('chatForm').addEventListener('submit', sendChat);
+  $('mbChat').addEventListener('click', openChatSheet);
+  $('chatDlg').addEventListener('close', closeChatSheet);
+  setInterval(() => { if (ONLINE && net.chat.length && chatVisible()) renderChat(); }, 20000);
+  $('copyUrl').addEventListener('click', () => {
+    const t = $('inviteUrl').textContent;
+    const ok = () => { $('copyUrl').textContent = 'Copied'; setTimeout(() => { $('copyUrl').textContent = 'Copy'; }, 1500); };
+    const fallback = () => { const r = document.createRange(); r.selectNodeContents($('inviteUrl')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); };
+    try { navigator.clipboard.writeText(t).then(ok, fallback); } catch (e) { fallback(); }
+  });
+
+  cv.addEventListener('pointermove', showTip);
+  cv.addEventListener('pointerdown', showTip);
+  cv.addEventListener('pointerleave', e => { if (e.pointerType !== 'touch') tip.hidden = true; });
+
+  new ResizeObserver(resize).observe(board);
+  new ResizeObserver(() => sizeCharts()).observe($('spane-stats'));
+  window.addEventListener('resize', resize);
+  window.addEventListener('pagehide', save);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) save();
+    else { if (auto.on) wakeOn(); if (ONLINE) refreshMe(); }
+  });
+  setInterval(() => { if (ONLINE && net.feed.length && settings.sideTab === 'lb') renderFeed(); }, 10000);
+  let wasFrozen = false;
+  setInterval(() => {
+    if (!ONLINE) return;
+    const frozen = net.frozenUntil > Date.now();
+    if (frozen || wasFrozen) hud();
+    wasFrozen = frozen;
+    if (net.boost) { renderBoost(); if (net.boost.until <= Date.now()) { net.boost = null; renderBoost(); } }
+  }, 500);
+}
+
+function start(data) {
+  let saved = lsGet(PROFILE_KEY, null);
+  if (!saved && !ONLINE) saved = migrateV1();
+  applyProfile(saved);
+  if (data && Object.keys(data).length) applyProfile(data);
+  TOKC = { gold: TOK('gold'), muted: TOK('muted'), bad: TOK('bad'), ink: TOK('ink') };
+  if (!skinUnlocked(settings.skin)) settings.skin = 'gold';
+
+  shownBal = state.balance;
+  balEl.textContent = money(state.balance);
+  betIn.value = (state.bet / 100).toFixed(2);
+  setSound(settings.sound);
+  fillAuto();
+  renderHistory();
+  renderTrophies();
+  wire();
+  resize();
+
+  if (ONLINE) {
+    document.querySelector('.side.panel').setAttribute('aria-label', 'Leaderboard and stats');
+    $('stab-lb').hidden = false;
+    $('stab-chat').hidden = false;
+    $('mbChat').hidden = false;
+    $('mobileBar').classList.add('has-chat');
+    $('tagline').textContent = 'Wi‑Fi table · everyone here shares the leaderboard';
+    state.balance = 0; shownBal = 0; balEl.textContent = money(0);
+    net.token = lsGet(TOKEN_KEY, null);
+    (async () => {
+      try { net.info = await api('info'); net.config = net.info.config; applyBoost(net.config.boost); } catch (e) { notice("Can't reach the game server.", 'warn', 6000); }
+      // opened from Game Night Hub: sign in as the hub profile
+      const hubCode = new URLSearchParams(location.search).get('hub');
+      if (hubCode && /^[\w-]{6,40}$/.test(hubCode)) {
+        history.replaceState(null, '', location.pathname);
+        try { const r = await api('join', { hub: hubCode }); net.token = r.token; lsSet(TOKEN_KEY, r.token); } catch (e) { /* falls back to the join box */ }
+      }
+      if (net.token) {
+        try { const r = await api('me'); net.config = r.config; applyMe(r.me); }
+        catch (e) { if (e.code === 'auth') { net.token = null; lsSet(TOKEN_KEY, null); } }
+      }
+      connectEvents();
+      loadChatHistory();
+      if (!net.me) openJoin();
+      fillPlayerSettings();
+    })();
+  }
+  setDeskTab(settings.deskTab === 'auto' ? 'auto' : 'manual');
+  setSideTab(settings.sideTab);
+  hud();
+  requestAnimationFrame(t => { last = t; frame(t); });
+}
+
+window.claude?.hot?.snapshot?.(snapshot);
+window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});
+})();
+</script>
