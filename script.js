@@ -69,8 +69,9 @@
       list.append(li);
     });
     document.querySelector('[data-nav]').setAttribute('aria-label', site.navigationLabel);
+    // The link's name starts with the visible text, so voice control ("click Ethan Baker") works.
     document.querySelector('[data-brand-name]').textContent = site.hero.name;
-    document.querySelector('[data-brand-link]').setAttribute('aria-label', `${site.hero.name}, back to top`);
+    document.querySelector('[data-brand-link]').append(el('span', 'sr-only', ', back to top'));
   }
 
   function setupTheme(controls) {
@@ -762,6 +763,17 @@
     print.type = 'button';
     print.addEventListener('click', () => window.print());
     inner.append(print);
+
+    // Closed timeline stops would print as titles only, so open them for printing and restore afterwards.
+    let closedForPrint = [];
+    window.addEventListener('beforeprint', () => {
+      closedForPrint = [...document.querySelectorAll('details.stop-body:not([open])')];
+      closedForPrint.forEach(details => { details.open = true; });
+    });
+    window.addEventListener('afterprint', () => {
+      closedForPrint.forEach(details => { details.open = false; });
+      closedForPrint = [];
+    });
     footer.append(el('div', 'checker'), inner);
   }
 
@@ -819,10 +831,13 @@
     } catch (error) {
       console.error(error);
       const message = el('div', 'load-error');
-      message.append(
-        el('p', '', "The site content didn't load."),
-        el('p', '', 'If you opened index.html straight from Finder, the browser blocks it from reading site-content.json. In VS Code, open the terminal and run "npm start", then go to http://localhost:8080.')
-      );
+      message.append(el('p', '', "The site content didn't load."));
+      // The setup hint is only for previewing on the Mac; visitors just get a retry.
+      if (location.protocol === 'file:' || location.hostname === 'localhost') {
+        message.append(el('p', '', 'If you opened index.html straight from Finder, the browser blocks it from reading site-content.json. In VS Code, open the terminal and run "npm start", then go to http://localhost:8080.'));
+      } else {
+        message.append(el('p', '', 'Refresh the page to try again.'));
+      }
       document.querySelector('[data-site-content]').replaceChildren(message);
     } finally {
       main.setAttribute('aria-busy', 'false');

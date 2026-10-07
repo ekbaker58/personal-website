@@ -208,10 +208,19 @@ button { font: inherit; color: inherit; }
 .theme-icon { width: 22px; height: 22px; border-radius: 50%; background: var(--yellow); box-shadow: inset -7px -3px 0 0 var(--orange); }
 :root[data-theme="dark"] .theme-icon { background: transparent; box-shadow: inset -7px -2px 0 0 var(--yellow); }
 
-@media (max-width: 720px) {
-  .brand-name { display: none; }
+/* Phones and small tablets: the nav gets its own full-width row so every section link fits on screen.
+   (Above 760px everything fits on one row next to the name.) */
+@media (max-width: 760px) {
+  html { scroll-padding-top: 100px; }
+  .topbar-inner { flex-wrap: wrap; row-gap: 4px; padding-top: 8px; padding-bottom: 6px; }
+  .theme-toggle { margin-left: auto; padding: 6px 8px; }
   .theme-toggle span:last-child { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-  .theme-toggle { padding: 6px 8px; }
+  .nav { order: 3; flex-basis: 100%; margin: 0 -6px; }
+  .nav ul { justify-content: space-between; }
+  .nav a { padding: 6px 7px; font-size: .875rem; }
+}
+@media (max-width: 380px) {
+  .nav a { padding: 6px 4px; font-size: .8125rem; }
 }
 
 /* ---------- hero ---------- */
@@ -678,6 +687,11 @@ details[open] .stop-toggle { background: var(--c); }
 .contact-panel .btn-outline { border-color: #121846; color: #121846; }
 .contact-panel .btn-outline:hover { background: #121846; color: #ffffff; }
 .contact-school { margin-top: 24px; font-size: .95rem; }
+/* Phones: keep the decorations in the corners instead of behind the text. */
+@media (max-width: 560px) {
+  .contact-panel::before { right: -110px; top: -110px; }
+  .contact-panel::after { right: -30px; bottom: -64px; width: 96px; height: 96px; }
+}
 
 /* ---------- footer ---------- */
 .footer { background: #121846; color: #dfe2ff; }
