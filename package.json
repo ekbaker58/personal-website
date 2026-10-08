@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node serve.js",
     "sync-games": "bash scripts/sync-games.sh",
+    "pages": "node scripts/pages.js",
     "check": "node scripts/check-site.js"
   }
 }

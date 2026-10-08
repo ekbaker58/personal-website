@@ -2,14 +2,21 @@
   "site": {
     "title": "Ethan Baker",
     "description": "Industrial Engineering student at the University of South Florida, designing steering for Bulls Racing and working on startup hardware.",
+    "url": "https://ekbaker58.github.io/personal-website/",
     "hero": {
+      "availability": {
+        "label": "Open to a Summer 2027 internship",
+        "detail": "Industrial engineering, manufacturing or automation",
+        "href": "#contact"
+      },
       "name": "Ethan Baker",
       "headline": "Industrial Engineering @ USF · Formula SAE steering · startup hardware",
       "location": "Columbus, OH · Tampa, FL",
       "lede": "I'm designing the steering for Bulls Racing's next Formula SAE car, consulting on hardware for a student startup, and building party games for my friends in my spare time.",
       "connect": {
         "linkedinLabel": "Connect on LinkedIn",
-        "emailLabel": "Email me"
+        "emailLabel": "Email me",
+        "resumeLabel": "Résumé (PDF)"
       },
       "primaryAction": {
         "label": "Drive the timeline",
@@ -26,12 +33,12 @@
         "label": "About"
       },
       {
-        "id": "track",
-        "label": "Timeline"
+        "id": "projects",
+        "label": "Projects"
       },
       {
-        "id": "games",
-        "label": "Games"
+        "id": "track",
+        "label": "Timeline"
       },
       {
         "id": "off-the-clock",
@@ -118,6 +125,19 @@
         }
       ]
     },
+    "projectsSection": {
+      "heading": "Projects",
+      "title": "Projects",
+      "intro": "What I've built and what I'm building now. Each one has its own page.",
+      "readMoreLabel": "Read more",
+      "backLabel": "All projects",
+      "factsTitle": "At a glance",
+      "resultsTitle": "Results",
+      "photosTitle": "Photos",
+      "moreTitle": "More projects",
+      "openPhotoLabel": "Open full size",
+      "notFound": "That project page doesn't exist (yet)."
+    },
     "timelineSection": {
       "heading": "Timeline",
       "eyebrow": "Experience, projects & milestones",
@@ -165,7 +185,12 @@
       },
       "startLabel": "Start",
       "finishLabel": "Finish line",
-      "hudLabel": "Now passing"
+      "hudLabel": "Now passing",
+      "linkLabels": {
+        "project": "Read the project page",
+        "games": "See the games",
+        "contact": "Get in touch"
+      }
     },
     "games": {
       "heading": "Games",
@@ -336,6 +361,240 @@
     },
     "footer": "Designed and built by Ethan Baker."
   },
+  "projects": [
+    {
+      "id": "bulls-racing",
+      "title": "Bulls Racing: Formula SAE",
+      "eyebrow": "USF's Formula SAE team · Driver Interface sub-team",
+      "dateLabel": "Fall 2025 to now",
+      "category": "engineering",
+      "status": "in-progress",
+      "summary": "My first season was fabrication on the F26 car. This season I'm designing the steering system for F27, with one goal: make it take less effort to turn the wheel than it did on F26.",
+      "description": "Ethan Baker on Bulls Racing, USF's Formula SAE team: fabrication on the F26 car and the steering system design for F27.",
+      "facts": [
+        {
+          "label": "Team",
+          "value": "Bulls Racing, USF's Formula SAE team"
+        },
+        {
+          "label": "Sub-team",
+          "value": "Driver Interface (5 members): brakes and everything the driver touches"
+        },
+        {
+          "label": "F26 season",
+          "value": "Fabrication and assembly"
+        },
+        {
+          "label": "F27 season",
+          "value": "Steering system design"
+        }
+      ],
+      "results": [
+        {
+          "value": "16 N·m",
+          "label": "Steering torque measured on F26. The F27 design has to come in under it."
+        },
+        {
+          "value": "19th of 111",
+          "label": "F26 at FSAE Michigan 2026 (team result)"
+        }
+      ],
+      "sections": [
+        {
+          "heading": "F27: designing the steering system",
+          "status": "in-progress",
+          "paragraphs": [
+            "My first design role on the team. The goal is to bring steering torque below the 16 N·m measured on F26 and fix the steering compliance flagged in driver testing."
+          ],
+          "bullets": [
+            "Stiffening the steering-column stabilizer against lateral deflection",
+            "Selecting the column bearings (F26 used press-fit bearings)",
+            "Choosing between a double-Cardan joint and two single U-joints so the column doesn't bind",
+            "Designing for roughly double the 4.44° of deflection measured on F26, for margin"
+          ]
+        },
+        {
+          "heading": "F26: my first season",
+          "status": "done",
+          "paragraphs": [
+            "My first season on the team was fabrication. The F26 car went on to place 19th of 111 teams at FSAE Michigan 2026."
+          ],
+          "bullets": [
+            "Made the carbon-fiber pedal faces for the pedal box",
+            "Installed components and helped with driver-fit adjustments",
+            "Handled pedal-box removal and reinstallation"
+          ]
+        }
+      ],
+      "photos": [
+        {
+          "src": "images/projects/bulls-racing/f26-car.jpg",
+          "alt": "The F26 Bulls Racing car, number 66, in black and green livery, parked in a dark workshop.",
+          "caption": "The F26 car."
+        },
+        {
+          "src": "images/projects/bulls-racing/pedal-box.jpg",
+          "alt": "Looking down into a pedal box: two pedals with grip-taped pedal faces above carbon-fiber heel cups, inside a steel tube frame.",
+          "caption": "The pedal box."
+        },
+        {
+          "src": "images/projects/bulls-racing/pedal-closeup.jpg",
+          "alt": "Close-up of one pedal with a grip-taped pedal face above a carbon-fiber heel cup, with blue brake-line fittings behind it.",
+          "caption": "A pedal and heel cup up close."
+        },
+        {
+          "src": "images/projects/bulls-racing/steering-wheel.jpg",
+          "alt": "A carbon-fiber Formula SAE steering wheel with wrapped grips, lying on a wooden bench.",
+          "caption": "A steering wheel on the bench."
+        },
+        {
+          "src": "images/projects/bulls-racing/car-on-stands.jpg",
+          "alt": "A Bulls Racing car on stands in the shop, with bare carbon and aluminum bodywork.",
+          "caption": "A Bulls Racing car on stands in the shop."
+        },
+        {
+          "src": "images/projects/bulls-racing/f26-team.jpg",
+          "alt": "About fifty Bulls Racing team members in matching black shirts around the F26 car, next to light-up F26 letters and balloons.",
+          "caption": "The team with the F26 car."
+        }
+      ],
+      "publish": true
+    },
+    {
+      "id": "syp",
+      "title": "syp",
+      "eyebrow": "Student hydration-tech startup · Engineering Consultant",
+      "dateLabel": "Spring 2026 to now",
+      "category": "startup",
+      "status": "in-progress",
+      "summary": "syp measures how much athletes actually drink. I'm its engineering consultant: I came up with how it tracks a whole team at once, and I help pitch it.",
+      "description": "Ethan Baker's work as engineering consultant for syp, a student hydration-tech startup: its team tracking system and its pitch competitions.",
+      "facts": [
+        {
+          "label": "Company",
+          "value": "syp, a student hydration-tech startup"
+        },
+        {
+          "label": "My role",
+          "value": "Engineering Consultant"
+        },
+        {
+          "label": "Where",
+          "value": "Tampa, FL"
+        }
+      ],
+      "results": [
+        {
+          "value": "2nd",
+          "label": "Brand Builder Award, e-Fest 2026, as one of 25 finalist teams from nearly 170 ventures"
+        },
+        {
+          "value": "1 of 20",
+          "label": "U.S. finalists, Alibaba.com CoCreate Pitch 2026, from 39,000+ applicants"
+        },
+        {
+          "value": "$10,000",
+          "label": "CoCreate finalist award"
+        }
+      ],
+      "sections": [
+        {
+          "heading": "Tracking a whole team",
+          "paragraphs": [
+            "I came up with syp's team-integration system: RFID wristbands on the players and an antenna in the bottle. Each drink is matched to the athlete who took it and shows up live on the coach's dashboard."
+          ]
+        },
+        {
+          "heading": "Design drawings",
+          "paragraphs": [
+            "I drafted the design drawings for syp's multi-size variant. A teammate built the CAD model from them."
+          ]
+        },
+        {
+          "heading": "Pitching",
+          "paragraphs": [
+            "I'm one of two people who present syp's business plan."
+          ],
+          "bullets": [
+            "e-Fest 2026, Minneapolis: I pitched on stage to the judges, and syp took 2nd place for the Brand Builder Award.",
+            "Alibaba.com CoCreate Pitch 2026: I worked on our application. syp was one of 20 U.S. finalists and received the $10,000 finalist award. The team pitched the final in Los Angeles.",
+            "USF Business Plan Championship, October 2, 2026: I pitched syp's business plan with a teammate."
+          ]
+        }
+      ],
+      "photos": [],
+      "publish": true
+    },
+    {
+      "id": "nrc-spinner",
+      "title": "Beetleweight combat robot",
+      "eyebrow": "National Robotics Challenge 2025 · Marion, OH",
+      "dateLabel": "April 2025",
+      "category": "engineering",
+      "status": "done",
+      "summary": "A partner and I built a 3-lb beetleweight combat robot with a horizontal spinner, with no budget. We repaired it between matches, went 4–1 and placed 8th overall.",
+      "description": "Ethan Baker's 3-lb beetleweight combat robot: a horizontal spinner built with no budget that went 4–1 and placed 8th at the National Robotics Challenge 2025.",
+      "facts": [
+        {
+          "label": "Event",
+          "value": "National Robotics Challenge, Marion, OH"
+        },
+        {
+          "label": "Weight class",
+          "value": "3-lb beetleweight"
+        },
+        {
+          "label": "Weapon",
+          "value": "Horizontal spinner"
+        },
+        {
+          "label": "Team",
+          "value": "Me and one partner, 50/50 on design, build and repairs"
+        }
+      ],
+      "results": [
+        {
+          "value": "4–1",
+          "label": "Match record"
+        },
+        {
+          "value": "8th",
+          "label": "Overall"
+        }
+      ],
+      "sections": [
+        {
+          "heading": "The build",
+          "bullets": [
+            "Hard-plastic chassis with the internals housed inside",
+            "Built with no budget",
+            "Designed, built and repaired 50/50 with my partner"
+          ]
+        },
+        {
+          "heading": "At the event",
+          "paragraphs": [
+            "We repaired battle damage between matches and finished 4–1, 8th overall."
+          ]
+        }
+      ],
+      "photos": [],
+      "publish": true
+    },
+    {
+      "id": "game-night",
+      "title": "Five party games",
+      "eyebrow": "Game night",
+      "dateLabel": "September 2026",
+      "category": "engineering",
+      "status": "done",
+      "summary": "A laptop runs the games, a TV shows the big screen, and friends play on their phones. Two of them run right here on this site.",
+      "href": "#games",
+      "linkLabel": "Play them",
+      "photos": [],
+      "publish": true
+    }
+  ],
   "timeline": [
     {
       "id": "roots-fulda",
@@ -369,7 +628,7 @@
         "Hard-plastic chassis with the internals housed inside",
         "Designed, built, and repaired 50/50 with my partner"
       ],
-      "link": "projects/nrc-spinner",
+      "link": "projects/nrc-spinner/",
       "publish": true
     },
     {
@@ -405,7 +664,7 @@
         "Installed components and helped with driver adjustments",
         "Handled pedal-box removal and reinstallation"
       ],
-      "link": null,
+      "link": "projects/bulls-racing/",
       "publish": true
     },
     {
@@ -424,7 +683,7 @@
         "Drafted the design drawings for syp's multi-size variant (a teammate built the CAD model)",
         "One of two people who present syp's business plan"
       ],
-      "link": "projects/syp",
+      "link": "projects/syp/",
       "publish": true
     },
     {
@@ -459,7 +718,7 @@
       "tier": "core",
       "summary": "syp was one of 25 finalist teams. I pitched on stage to the judges, and we took 2nd place for the Brand Builder Award.",
       "details": [],
-      "link": "projects/syp",
+      "link": "projects/syp/",
       "publish": true
     },
     {
@@ -475,7 +734,7 @@
       "tier": "core",
       "summary": "The F26 car I helped fabricate placed 19th out of 111 teams in the official results.",
       "details": [],
-      "link": null,
+      "link": "projects/bulls-racing/",
       "publish": true
     },
     {
@@ -507,7 +766,7 @@
       "tier": "extra",
       "summary": "Hardwiring a front-and-rear dash cam into my BMW X6 for parking mode: identifying constant vs. switched circuits in the fuse box, then routing the rear cable across a one-piece liftgate.",
       "details": [],
-      "link": "projects/dashcam",
+      "link": null,
       "publish": true
     },
     {
@@ -523,7 +782,7 @@
       "tier": "core",
       "summary": "syp was one of 20 U.S. finalists selected from 39,000+ applicants and received the $10,000 finalist award. I worked on our application; the team pitched the final in LA.",
       "details": [],
-      "link": "projects/syp",
+      "link": "projects/syp/",
       "publish": true
     },
     {
@@ -563,7 +822,7 @@
         "Choosing between a double-Cardan joint and two single U-joints so the column doesn't bind",
         "Designing for roughly double the 4.44° of deflection measured on F26, for margin"
       ],
-      "link": "projects/f27-steering",
+      "link": "projects/bulls-racing/",
       "publish": true
     },
     {
@@ -579,7 +838,7 @@
       "tier": "core",
       "summary": "Pitched syp's business plan with a teammate.",
       "details": [],
-      "link": "projects/syp",
+      "link": "projects/syp/",
       "publish": true
     },
     {

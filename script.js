@@ -3,44 +3,17 @@
   Everything you read on the page comes from site-content.json.
   This file turns that data into the page and runs the interactive parts:
   the race-track timeline, the games player, the two-time-zone watch, and the theme toggle.
+  Helpers shared with the project pages (links, theme, project cards) are in common.js.
 */
 (() => {
   'use strict';
 
-  const SVG_NS = 'http://www.w3.org/2000/svg';
-  const THEME_KEY = 'ethan-baker-theme';
+  const {
+    el, svg, isFilled, isSafeHref, categoryClass, isExternal, setupTheme, renderNavigation,
+    publishedProjects, renderProjectCard, renderContactPanel, renderFooter: renderSharedFooter,
+    renderLoadError, loadContent
+  } = window.EB;
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-  const CATEGORIES = ['engineering', 'startup', 'leadership', 'education', 'work', 'life'];
-
-  // ---------- small helpers ----------
-  function el(tag, className, text) {
-    const node = document.createElement(tag);
-    if (className) node.className = className;
-    if (text !== undefined && text !== null) node.textContent = text;
-    return node;
-  }
-
-  function svg(tag, attrs = {}) {
-    const node = document.createElementNS(SVG_NS, tag);
-    Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, value));
-    return node;
-  }
-
-  // A value is shown only if it is real text. Anything containing "TODO" never reaches the page.
-  function isFilled(value) {
-    return typeof value === 'string' && value.trim() !== '' && !value.includes('TODO');
-  }
-
-  // Links: same-page anchors, https pages, mailto, or a file in this folder.
-  function isSafeHref(href) {
-    if (!isFilled(href)) return false;
-    return /^#[\w-]+$/.test(href) || /^https:\/\//.test(href) || /^mailto:[^\s]+$/.test(href) || /^[\w./-]+\.(pdf|html)$/.test(href);
-  }
-
-  function categoryClass(category) {
-    return CATEGORIES.includes(category) ? `cat-${category}` : 'cat-engineering';
-  }
 
   function validSortKey(value) {
     return /^\d{4}-\d{2}$/.test(value) ? value : null;
@@ -56,46 +29,6 @@
     inner.append(heading);
     section.append(inner);
     return { section, inner, heading };
-  }
-
-  // ---------- header and theme ----------
-  function renderNavigation(site) {
-    const list = document.querySelector('[data-primary-nav]');
-    site.navigation.forEach(item => {
-      const li = el('li');
-      const link = el('a', '', item.label);
-      link.href = `#${item.id}`;
-      li.append(link);
-      list.append(li);
-    });
-    document.querySelector('[data-nav]').setAttribute('aria-label', site.navigationLabel);
-    // The link's name starts with the visible text, so voice control ("click Ethan Baker") works.
-    document.querySelector('[data-brand-name]').textContent = site.hero.name;
-    document.querySelector('[data-brand-link]').append(el('span', 'sr-only', ', back to top'));
-  }
-
-  function setupTheme(controls) {
-    const button = document.querySelector('[data-theme-toggle]');
-    const text = document.querySelector('[data-theme-text]');
-    button.setAttribute('aria-label', controls.themeLabel);
-
-    function apply(theme) {
-      document.documentElement.dataset.theme = theme;
-      button.setAttribute('aria-pressed', String(theme === 'dark'));
-      text.textContent = theme === 'dark' ? controls.lightTheme : controls.darkTheme;
-      document.querySelector('#theme-color-meta').content = theme === 'dark' ? '#0b0e2a' : '#f3f4fb';
-      document.dispatchEvent(new CustomEvent('themechange'));
-    }
-
-    let saved = null;
-    try { saved = localStorage.getItem(THEME_KEY); } catch { saved = null; }
-    apply(saved === 'light' || saved === 'dark' ? saved : (prefersDark.matches ? 'dark' : 'light'));
-
-    button.addEventListener('click', () => {
-      const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-      apply(next);
-      try { localStorage.setItem(THEME_KEY, next); } catch { /* theme still applies for this visit */ }
-    });
   }
 
   // ---------- hero ----------
@@ -119,6 +52,19 @@
 
     const inner = el('div', 'wrap hero-inner');
     const copy = el('div', 'hero-copy');
+
+    // "Open to a Summer 2027 internship": the first thing a recruiter should see.
+    const availability = hero.availability;
+    if (availability && isFilled(availability.label) && isSafeHref(availability.href)) {
+      const badge = el('a', 'hero-availability');
+      badge.href = availability.href;
+      const dot = el('span', 'hero-availability-dot');
+      dot.setAttribute('aria-hidden', 'true');
+      badge.append(dot, el('span', 'hero-availability-label', availability.label));
+      if (isFilled(availability.detail)) badge.append(el('span', 'sr-only', ': '), el('span', 'hero-availability-detail', availability.detail));
+      copy.append(badge);
+    }
+
     copy.append(el('p', 'hero-location', hero.location));
 
     const name = el('h1', 'hero-name');
@@ -134,12 +80,14 @@
     const links = (site.contact.links || []).filter(link => isSafeHref(link.href));
     const linkedin = links.find(link => /^https:\/\/(www\.)?linkedin\.com\//.test(link.href));
     const email = links.find(link => link.href.startsWith('mailto:'));
+    const resume = links.find(link => /\.pdf$/.test(link.href));
+    const connect = hero.connect || {};
     const actions = el('div', 'hero-actions');
-    [[linkedin, hero.connect && hero.connect.linkedinLabel], [email, hero.connect && hero.connect.emailLabel]].forEach(([link, label]) => {
+    [[linkedin, connect.linkedinLabel], [email, connect.emailLabel], [resume, connect.resumeLabel]].forEach(([link, label]) => {
       if (!link || !isFilled(label)) return;
       const button = el('a', actions.childElementCount ? 'btn btn-outline' : 'btn btn-solid', label);
       button.href = link.href;
-      if (link.href.startsWith('https://')) { button.target = '_blank'; button.rel = 'noopener'; }
+      if (isExternal(link.href)) { button.target = '_blank'; button.rel = 'noopener'; }
       actions.append(button);
     });
     if (actions.childElementCount) copy.append(actions);
@@ -206,6 +154,18 @@
     mount.append(section);
   }
 
+  // ---------- projects ----------
+  function renderProjects(mount, site, projects) {
+    if (!projects.length) return;
+    const cfg = site.projectsSection;
+    const { section, inner } = sectionShell('projects', cfg.title, 'projects');
+    if (isFilled(cfg.intro)) inner.append(el('p', 'section-intro', cfg.intro));
+    const grid = el('div', 'project-grid');
+    projects.forEach(project => grid.append(renderProjectCard(project, site, '')));
+    inner.append(grid);
+    mount.append(section);
+  }
+
   // ---------- the race-track timeline ----------
   function renderStop(item, labels) {
     const stop = el('li', `stop ${categoryClass(item.category)} status-${item.status}`);
@@ -231,8 +191,16 @@
         detail.append(ul);
       }
     }
-    if (isSafeHref(item.link) && item.link.startsWith('#')) {
-      const link = el('a', 'stop-link', item.link === '#games' ? 'See the games' : 'Get in touch');
+    // Project pages and a few sections on this page. Labels come from timelineSection.linkLabels.
+    const linkLabels = labels.linkLabels || {};
+    let linkLabel = null;
+    if (isSafeHref(item.link)) {
+      if (item.link.startsWith('projects/')) linkLabel = linkLabels.project;
+      else if (item.link === '#games') linkLabel = linkLabels.games;
+      else if (item.link === '#contact') linkLabel = linkLabels.contact;
+    }
+    if (isFilled(linkLabel)) {
+      const link = el('a', 'stop-link', linkLabel);
       link.href = item.link;
       detail.append(link);
     }
@@ -751,19 +719,7 @@
   // ---------- contact and footer ----------
   function renderContact(mount, contact, education) {
     const { section, inner } = sectionShell('contact', contact.heading, 'contact');
-    const panel = el('div', 'contact-panel');
-    panel.append(el('p', 'contact-title', contact.title), el('p', 'contact-text', contact.text));
-    const links = contact.links.filter(link => isSafeHref(link.href));
-    if (links.length) {
-      const row = el('div', 'contact-links');
-      links.forEach((link, index) => {
-        const a = el('a', index === 0 ? 'btn btn-solid' : 'btn btn-outline', link.label);
-        a.href = link.href;
-        if (/^https:\/\//.test(link.href)) { a.target = '_blank'; a.rel = 'noopener'; }
-        row.append(a);
-      });
-      panel.append(row);
-    }
+    const panel = renderContactPanel(contact, '');
     const school = el('p', 'contact-school', `${education.institution}, ${education.degree}, ${education.graduation}. ${education.gpa}, ${education.recognition}.`);
     panel.append(school);
     inner.append(panel);
@@ -771,25 +727,18 @@
   }
 
   function renderFooter(site) {
-    const footer = document.querySelector('[data-footer]');
-    const inner = el('div', 'wrap footer-inner');
-    inner.append(el('p', '', site.footer));
-    const print = el('button', 'footer-button', site.controls.printProfile);
-    print.type = 'button';
-    print.addEventListener('click', () => window.print());
-    inner.append(print);
-
     // Closed timeline stops would print as titles only, so open them for printing and restore afterwards.
     let closedForPrint = [];
-    window.addEventListener('beforeprint', () => {
-      closedForPrint = [...document.querySelectorAll('details.stop-body:not([open])')];
-      closedForPrint.forEach(details => { details.open = true; });
+    renderSharedFooter(site, {
+      open() {
+        closedForPrint = [...document.querySelectorAll('details.stop-body:not([open])')];
+        closedForPrint.forEach(details => { details.open = true; });
+      },
+      close() {
+        closedForPrint.forEach(details => { details.open = false; });
+        closedForPrint = [];
+      }
     });
-    window.addEventListener('afterprint', () => {
-      closedForPrint.forEach(details => { details.open = false; });
-      closedForPrint = [];
-    });
-    footer.append(el('div', 'checker'), inner);
   }
 
   // ---------- section highlighting in the nav ----------
@@ -814,9 +763,7 @@
   async function start() {
     const main = document.querySelector('#content');
     try {
-      const response = await fetch('site-content.json');
-      if (!response.ok) throw new Error(`site-content.json returned ${response.status}`);
-      const content = await response.json();
+      const content = await loadContent('');
       const site = content.site;
 
       document.title = site.title;
@@ -825,12 +772,13 @@
       document.querySelector('meta[property="og:description"]').content = site.description;
       document.querySelector('[data-skip-link]').textContent = site.controls.skipToContent;
 
-      renderNavigation(site);
+      renderNavigation(site, '', null);
       setupTheme(site.controls);
 
       const mount = document.querySelector('[data-site-content]');
       renderHero(mount, site);
       renderAbout(mount, site.about);
+      renderProjects(mount, site, publishedProjects(content));
       renderTrack(mount, site.timelineSection, content.timeline);
       renderGames(mount, site.games);
       renderOffTheClock(mount, site.offTheClock);
@@ -845,15 +793,7 @@
       }
     } catch (error) {
       console.error(error);
-      const message = el('div', 'load-error');
-      message.append(el('p', '', "The site content didn't load."));
-      // The setup hint is only for previewing on the Mac; visitors just get a retry.
-      if (location.protocol === 'file:' || location.hostname === 'localhost') {
-        message.append(el('p', '', 'If you opened index.html straight from Finder, the browser blocks it from reading site-content.json. In VS Code, open the terminal and run "npm start", then go to http://localhost:8080.'));
-      } else {
-        message.append(el('p', '', 'Refresh the page to try again.'));
-      }
-      document.querySelector('[data-site-content]').replaceChildren(message);
+      renderLoadError(document.querySelector('[data-site-content]'), '');
     } finally {
       main.setAttribute('aria-busy', 'false');
     }
