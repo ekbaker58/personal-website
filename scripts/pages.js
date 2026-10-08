@@ -7,14 +7,26 @@
 // Why this exists: link previews (LinkedIn, iMessage) and search engines read the page's <head>
 // without running any JavaScript. So each project page needs its title, description and address
 // written into its own HTML file, and index.html needs the same for the home page.
+// It also stamps a version on styles.css and the scripts (styles.css?v=1a2b3c4d). Browsers keep
+// files for 10 minutes on GitHub Pages; a new version tag makes them fetch the new file right away.
 // The words on the pages still come from site-content.json when the page loads.
 // Uses only Node's built-in modules, so there is nothing to install.
 
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 const ROOT = path.join(__dirname, '..');
 const CONTENT = path.join(ROOT, 'site-content.json');
+
+// A short fingerprint of each file, so the version tag changes whenever the file does.
+function assetVersions() {
+  const versions = {};
+  ['styles.css', 'common.js', 'script.js', 'project.js'].forEach(file => {
+    versions[file] = crypto.createHash('sha1').update(fs.readFileSync(path.join(ROOT, file))).digest('hex').slice(0, 8);
+  });
+  return versions;
+}
 
 function escapeHtml(value) {
   return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -51,6 +63,7 @@ function firstPhoto(project) {
 }
 
 function buildProjectPage(project, site, indexHtml) {
+  const v = assetVersions();
   const url = `${site.url}projects/${project.id}/`;
   const title = `${project.title} · ${site.title}`;
   const description = isFilled(project.description) ? project.description : project.summary;
@@ -80,7 +93,7 @@ ${image}
   <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
   <link rel="preload" href="../../fonts/barlow-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="../../styles.css">
+  <link rel="stylesheet" href="../../styles.css?v=${v['styles.css']}">
 </head>
 <body data-project="${escapeHtml(project.id)}">
   <a class="skip" href="#content" data-skip-link>Skip to content</a>
@@ -114,8 +127,8 @@ ${image}
 
   <footer class="footer" data-footer></footer>
 
-  <script src="../../common.js" defer></script>
-  <script src="../../project.js" defer></script>
+  <script src="../../common.js?v=${v['common.js']}" defer></script>
+  <script src="../../project.js?v=${v['project.js']}" defer></script>
 </body>
 </html>
 `;
@@ -123,7 +136,11 @@ ${image}
 
 // index.html keeps its own copy of the description and the site address for link previews.
 function syncIndexHtml(indexHtml, site) {
+  const v = assetVersions();
   const swaps = [
+    [/(<link rel="stylesheet" href=")styles\.css(?:\?v=\w+)?(">)/, `styles.css?v=${v['styles.css']}`],
+    [/(<script src=")common\.js(?:\?v=\w+)?(" defer><\/script>)/, `common.js?v=${v['common.js']}`],
+    [/(<script src=")script\.js(?:\?v=\w+)?(" defer><\/script>)/, `script.js?v=${v['script.js']}`],
     [/(<meta name="description" content=")[^"]*(">)/, escapeHtml(site.description)],
     [/(<meta property="og:description" content=")[^"]*(">)/, escapeHtml(site.description)],
     [/(<link rel="canonical" href=")[^"]*(">)/, escapeHtml(site.url)],
@@ -164,7 +181,7 @@ function run() {
   const updatedIndex = syncIndexHtml(index, site);
   if (updatedIndex !== index) {
     fs.writeFileSync(path.join(ROOT, 'index.html'), updatedIndex);
-    console.log('  Updated the description and address in index.html');
+    console.log('  Updated index.html (description, address or file versions)');
   }
 
   const pages = projectsWithPages(content);

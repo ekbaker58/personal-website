@@ -216,7 +216,7 @@ pageProjects.forEach(project => {
   if (!exists(file)) {
     problems.push(`The project "${project.id}" has no page yet. Run npm run pages to make ${file}.`);
   } else if (fs.readFileSync(path.join(ROOT, file), 'utf8') !== pages.buildProjectPage(project, site, pages.syncIndexHtml(fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8'), site))) {
-    problems.push(`${file} is out of date with site-content.json (title, description, address or photo). Run npm run pages.`);
+    problems.push(`${file} is out of date (title, description, address, photo or file versions). Run npm run pages.`);
   }
 });
 timeline.filter(item => typeof item.link === 'string' && item.link.startsWith('projects/')).forEach(item => {
@@ -242,7 +242,7 @@ if (!pages.checkUrl(site.url || '')) {
   problems.push('"url" in site-content.json should be the site\'s full address, like https://ekbaker58.github.io/personal-website/ (https:// and a slash at the end).');
 } else {
   if (pages.syncIndexHtml(indexHtml, site) !== indexHtml) {
-    warnings.push('The description or address in index.html doesn\'t match site-content.json, so link previews (LinkedIn, iMessage) would show the old one. Run npm run pages.');
+    problems.push('index.html is out of date: its description, address or file versions don\'t match. Without the new versions, visitors\' browsers can keep showing the old site for up to 10 minutes. Run npm run pages.');
   }
   if (exists('CNAME')) {
     const domain = fs.readFileSync(path.join(ROOT, 'CNAME'), 'utf8').trim();

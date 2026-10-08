@@ -163,6 +163,10 @@
     return card;
   }
 
+  function emailAddress(href) {
+    return decodeURIComponent(href.slice('mailto:'.length).split('?')[0]);
+  }
+
   function renderContactPanel(contact, root) {
     const panel = el('div', 'contact-panel');
     panel.append(el('p', 'contact-title', contact.title), el('p', 'contact-text', contact.text));
@@ -177,7 +181,40 @@
       });
       panel.append(row);
     }
+    // The address in plain text too, for anyone whose computer has no email app set up.
+    const email = links.find(link => link.href.startsWith('mailto:'));
+    if (email && isFilled(contact.addressText)) {
+      const line = el('p', 'contact-address');
+      const [before, after] = contact.addressText.split('{email}');
+      line.append(before || '', el('span', 'contact-address-email', emailAddress(email.href)), after || '');
+      panel.append(line);
+    }
     return panel;
+  }
+
+  // An "Email me" link only works if the visitor's computer has an email app set up. Plenty of people
+  // only use Gmail or Outlook in the browser, and for them the click does nothing. So the click also
+  // copies the address and says so. The email app still opens if there is one.
+  function setupEmailCopy(controls) {
+    if (!isFilled(controls.emailCopied)) return;
+    const toast = el('p', 'toast');
+    toast.setAttribute('role', 'status');
+    document.body.append(toast);
+    let timer = 0;
+    document.addEventListener('click', event => {
+      const link = event.target.closest('a[href^="mailto:"]');
+      if (!link || !navigator.clipboard || !window.isSecureContext) return;
+      const address = emailAddress(link.getAttribute('href'));
+      navigator.clipboard.writeText(address).then(() => {
+        toast.textContent = controls.emailCopied.replace('{email}', address);
+        toast.classList.add('is-visible');
+        window.clearTimeout(timer);
+        timer = window.setTimeout(() => {
+          toast.classList.remove('is-visible');
+          toast.textContent = '';
+        }, 7000);
+      }).catch(() => { /* clipboard blocked: the email link still works as a normal link */ });
+    });
   }
 
   function renderFooter(site, beforePrint) {
@@ -207,15 +244,17 @@
     mount.replaceChildren(message);
   }
 
+  // no-cache: the browser always checks for a newer site-content.json (a quick "not modified" when nothing changed),
+  // so an update shows up on a normal refresh.
   async function loadContent(root) {
-    const response = await fetch(`${root}site-content.json`);
+    const response = await fetch(`${root}site-content.json`, { cache: 'no-cache' });
     if (!response.ok) throw new Error(`site-content.json returned ${response.status}`);
     return response.json();
   }
 
   window.EB = Object.freeze({
     el, svg, isFilled, isSafeHref, isPhotoPath, categoryClass, resolveHref, isExternal,
-    setupTheme, renderNavigation, publishedProjects, projectHref, usablePhotos, statusLabel,
+    setupTheme, setupEmailCopy, renderNavigation, publishedProjects, projectHref, usablePhotos, statusLabel,
     renderProjectCard, renderContactPanel, renderFooter, renderLoadError, loadContent
   });
 })();

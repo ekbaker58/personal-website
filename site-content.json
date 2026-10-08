@@ -16,7 +16,7 @@
       "connect": {
         "linkedinLabel": "Connect on LinkedIn",
         "emailLabel": "Email me",
-        "resumeLabel": "Résumé (PDF)"
+        "resumeLabel": "Resume (PDF)"
       },
       "primaryAction": {
         "label": "Drive the timeline",
@@ -341,7 +341,8 @@
           "label": "Resume (PDF)",
           "href": "resume.pdf"
         }
-      ]
+      ],
+      "addressText": "Or write to {email}"
     },
     "education": {
       "heading": "Education",
@@ -357,7 +358,8 @@
       "darkTheme": "Dark",
       "lightTheme": "Light",
       "printProfile": "Print profile",
-      "themeLabel": "Switch between light and dark"
+      "themeLabel": "Switch between light and dark",
+      "emailCopied": "Copied {email}. If no email app opened, paste it into a new email."
     },
     "footer": "Designed and built by Ethan Baker."
   },

@@ -716,6 +716,30 @@ details[open] .stop-toggle { background: var(--c); }
 .contact-panel .btn-outline { border-color: #121846; color: #121846; }
 .contact-panel .btn-outline:hover { background: #121846; color: #ffffff; }
 .contact-school { margin-top: 24px; font-size: .95rem; }
+.contact-address { margin-top: 16px; font-weight: 500; }
+.contact-address-email { font-weight: 700; user-select: all; overflow-wrap: anywhere; }
+
+/* "Copied ekbaker58@gmail.com" note after an Email me click */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 60;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  padding: 12px 18px;
+  border-radius: var(--radius-sm);
+  background: #121846;
+  color: #ffffff;
+  border: 2px solid var(--yellow);
+  font-weight: 600;
+  box-shadow: 0 10px 30px rgba(8, 10, 34, .3);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 12px);
+  transition: opacity .2s ease, transform .2s ease;
+}
+.toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
 /* Phones: keep the decorations in the corners instead of behind the text. */
 @media (max-width: 560px) {
   .contact-panel::before { right: -110px; top: -110px; }
@@ -839,7 +863,7 @@ details[open] .stop-toggle { background: var(--c); }
 @media print {
   :root, :root[data-theme="dark"] { --paper: #fff; --surface: #fff; --surface-2: #fff; --ink: #111; --body: #222; --muted: #444; --line: #bbb; color-scheme: light; }
   .topbar, .hero-shapes, .hero-actions, .hero-more, .hero-availability, .track-svg, .track-flag, .track-controls, .hud, .cabinet, .game-actions, .footer-button, .checker, .watch, .skip,
-  .project-back, .project-hero::before, .project-card-more, .project-more { display: none !important; }
+  .project-back, .project-hero::before, .project-card-more, .project-more, .toast { display: none !important; }
   .project-aside { position: static; }
   .project-card, .project-photo, .project-section { break-inside: avoid; }
   body { font-size: 10.5pt; }

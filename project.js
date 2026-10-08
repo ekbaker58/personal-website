@@ -8,7 +8,7 @@
   'use strict';
 
   const {
-    el, isFilled, categoryClass, resolveHref, setupTheme, renderNavigation, publishedProjects,
+    el, isFilled, categoryClass, resolveHref, setupTheme, setupEmailCopy, renderNavigation, publishedProjects,
     projectHref, usablePhotos, statusLabel, renderProjectCard, renderContactPanel, renderFooter,
     renderLoadError, loadContent
   } = window.EB;
@@ -157,6 +157,7 @@
       document.querySelector('[data-brand-link]').href = ROOT;
       renderNavigation(site, ROOT, 'projects');
       setupTheme(site.controls);
+      setupEmailCopy(site.controls);
 
       const projects = publishedProjects(content);
       const project = projects.find(item => item.id === id && projectHref(item) === `projects/${item.id}/`);

@@ -9,7 +9,7 @@
   'use strict';
 
   const {
-    el, svg, isFilled, isSafeHref, categoryClass, isExternal, setupTheme, renderNavigation,
+    el, svg, isFilled, isSafeHref, categoryClass, isExternal, setupTheme, setupEmailCopy, renderNavigation,
     publishedProjects, renderProjectCard, renderContactPanel, renderFooter: renderSharedFooter,
     renderLoadError, loadContent
   } = window.EB;
@@ -774,6 +774,7 @@
 
       renderNavigation(site, '', null);
       setupTheme(site.controls);
+      setupEmailCopy(site.controls);
 
       const mount = document.querySelector('[data-site-content]');
       renderHero(mount, site);
