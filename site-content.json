@@ -615,6 +615,22 @@
       "publish": true
     },
     {
+      "id": "caddie-golf-club",
+      "date": "2024-04",
+      "dateLabel": "April 2024 – April 2026",
+      "dateIsApprox": false,
+      "title": "Caddie, The Golf Club",
+      "org": "The Golf Club",
+      "location": "New Albany, OH",
+      "category": "work",
+      "status": "done",
+      "tier": "core",
+      "summary": "Caddied for members and their guests and helped them with course strategy, at a private club ranked #46 on Golf Digest's list of America's 100 Greatest Golf Courses (2025–26).",
+      "details": [],
+      "link": null,
+      "publish": true
+    },
+    {
       "id": "nrc-2025",
       "date": "2025-04",
       "dateLabel": "April 2025",
@@ -631,6 +647,29 @@
         "Designed, built, and repaired 50/50 with my partner"
       ],
       "link": "projects/nrc-spinner/",
+      "publish": true
+    },
+    {
+      "id": "ccc-golf-ops",
+      "date": "2025-04",
+      "dateLabel": "April 2025 – April 2026",
+      "dateIsApprox": false,
+      "title": "Golf Operations Associate, Columbus Country Club",
+      "org": "Columbus Country Club",
+      "location": "Columbus, OH",
+      "category": "work",
+      "status": "done",
+      "tier": "core",
+      "summary": "Worked on the golf operations side of a private club, and caddied for members too.",
+      "details": [
+        "Cleaned golf carts",
+        "Got members' bags for their rounds",
+        "Helped in the pro shop",
+        "Took down the driving range",
+        "Helped with work around the golf course",
+        "Caddied for members"
+      ],
+      "link": null,
       "publish": true
     },
     {
