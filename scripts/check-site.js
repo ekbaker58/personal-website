@@ -11,7 +11,7 @@ const path = require('path');
 const pages = require('./pages.js');
 
 const ROOT = path.join(__dirname, '..');
-const PRIVATE_FILES = ['NOTES.md', 'site-content-private.md', 'ethan-site-brief.md', '_old-version-*/', '.claude/'];
+const PRIVATE_FILES = ['NOTES.md', 'site-content-private.md', 'ethan-site-brief.md', '_old-version-*/', '.claude/', 'photos-inbox/'];
 
 const problems = [];  // fix these before publishing
 const warnings = [];  // worth a look
@@ -264,7 +264,7 @@ const notIgnored = PRIVATE_FILES.filter(file => !ignored.includes(file));
 if (notIgnored.length) {
   notIgnored.forEach(file => problems.push(`${file} isn't in .gitignore, so it would be uploaded with the site. Add it on its own line.`));
 } else {
-  passed.push('Private files are in .gitignore (notes, brief, private content, backups, Claude Code settings)');
+  passed.push('Private files are in .gitignore (notes, brief, private content, backups, Claude Code settings, photos-inbox)');
 }
 
 // ---------- report ----------
