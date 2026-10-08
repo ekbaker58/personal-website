@@ -209,8 +209,39 @@ projects.forEach((project, index) => {
     if (file.length > 900 * 1024) {
       warnings.push(`${label} is ${(file.length / 1024 / 1024).toFixed(1)} MB. Resize it to about 1600 pixels wide so the page loads fast on phones (in Preview: Tools > Adjust Size).`);
     }
+    checkVideo(photo, label);
   });
 });
+
+// Videos: an .mp4 in images/, small enough for GitHub (100 MB per file) and for phones.
+function checkVideo(photo, label) {
+  if (!photo.video) return;
+  if (typeof photo.video !== 'string' || !/^images\/[\w./-]+\.mp4$/i.test(photo.video) || photo.video.includes('..')) {
+    problems.push(`${label}: "video" must be an .mp4 file inside images/. iPhone .MOV files need converting first (see NOTES.md).`);
+    return;
+  }
+  if (!exists(photo.video)) {
+    problems.push(`${label}: the video ${photo.video} isn't in the website folder yet.`);
+    return;
+  }
+  const size = fs.statSync(path.join(ROOT, photo.video)).size;
+  if (size > 95 * 1024 * 1024) problems.push(`${label}: ${photo.video} is ${(size / 1024 / 1024).toFixed(0)} MB. GitHub refuses files over 100 MB. Shorten or shrink it.`);
+  else if (size > 15 * 1024 * 1024) warnings.push(`${label}: ${photo.video} is ${(size / 1024 / 1024).toFixed(0)} MB, slow on phones. Aim for under 10 MB.`);
+}
+
+// Timeline stops can carry their own photos and videos too.
+timeline.forEach(item => (item.photos || []).forEach((photo, photoIndex) => {
+  const label = `Timeline entry "${item.id}", photo ${photoIndex + 1} (${photo.src})`;
+  if (typeof photo.src !== 'string' || !/^images\/[\w./-]+\.(jpe?g|png|webp|avif)$/i.test(photo.src) || !exists(photo.src)) {
+    problems.push(`${label} must be a .jpg, .png, .webp or .avif file that exists inside images/.`);
+    return;
+  }
+  photoCount += 1;
+  if (typeof photo.alt !== 'string' || photo.alt.trim() === '') problems.push(`${label} needs "alt" text.`);
+  const file = fs.readFileSync(path.join(ROOT, photo.src));
+  if (/\.jpe?g$/i.test(photo.src) && jpegHasLocation(file)) problems.push(`${label} still has the location where it was taken saved inside it. Remove it before publishing.`);
+  checkVideo(photo, label);
+}));
 pageProjects.forEach(project => {
   const file = `projects/${project.id}/index.html`;
   if (!exists(file)) {

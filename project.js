@@ -8,7 +8,7 @@
   'use strict';
 
   const {
-    el, isFilled, categoryClass, resolveHref, setupTheme, setupEmailCopy, renderNavigation, publishedProjects,
+    el, isFilled, categoryClass, resolveHref, renderMedia, setupTheme, setupEmailCopy, renderNavigation, publishedProjects,
     projectHref, usablePhotos, statusLabel, renderProjectCard, renderContactPanel, renderFooter,
     renderLoadError, loadContent
   } = window.EB;
@@ -17,19 +17,7 @@
   const ROOT = '../../';
 
   function renderPhoto(photo, cfg, className) {
-    const figure = el('figure', className);
-    const link = el('a', 'project-photo-link');
-    link.href = resolveHref(photo.src, ROOT);
-    link.setAttribute('aria-label', `${cfg.openPhotoLabel}: ${photo.alt}`);
-    const img = el('img');
-    img.src = resolveHref(photo.src, ROOT);
-    img.alt = photo.alt;
-    img.decoding = 'async';
-    if (className !== 'project-cover') img.loading = 'lazy';
-    link.append(img);
-    figure.append(link);
-    if (isFilled(photo.caption)) figure.append(el('figcaption', '', photo.caption));
-    return figure;
+    return renderMedia(photo, ROOT, className, cfg.openPhotoLabel, className !== 'project-cover');
   }
 
   function renderHeader(mount, project, site) {

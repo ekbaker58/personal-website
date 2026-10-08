@@ -10,7 +10,7 @@
 
   const {
     el, svg, isFilled, isSafeHref, categoryClass, isExternal, setupTheme, setupEmailCopy, renderNavigation,
-    publishedProjects, renderProjectCard, renderContactPanel, renderFooter: renderSharedFooter,
+    publishedProjects, renderProjectCard, renderContactPanel, renderFooter: renderSharedFooter, usablePhotos, renderMedia,
     renderLoadError, loadContent
   } = window.EB;
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -189,6 +189,13 @@
         const ul = el('ul', 'stop-bullets');
         bullets.forEach(text => ul.append(el('li', '', text)));
         detail.append(ul);
+      }
+      // Photos and videos for stops without a project page. They only load once the stop is opened.
+      const media = usablePhotos(item);
+      if (media.length) {
+        const row = el('div', 'stop-media');
+        media.forEach(photo => row.append(renderMedia(photo, '', 'stop-photo', labels.openPhotoLabel || '')));
+        detail.append(row);
       }
     }
     // Project pages and a few sections on this page. Labels come from timelineSection.linkLabels.

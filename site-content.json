@@ -190,7 +190,8 @@
         "project": "Read the project page",
         "games": "See the games",
         "contact": "Get in touch"
-      }
+      },
+      "openPhotoLabel": "Open full size"
     },
     "games": {
       "heading": "Games",
@@ -463,6 +464,132 @@
       "publish": true
     },
     {
+      "id": "flower-cart",
+      "title": "Senior design project: a flower cart",
+      "eyebrow": "High school senior design project",
+      "dateLabel": "May 2025",
+      "category": "engineering",
+      "status": "done",
+      "summary": "For my senior design project I built a rolling flower cart from scratch, with materials from around the house and from the store. I designed it to come apart for transport, and my sister's sorority uses it now.",
+      "description": "Ethan Baker's senior design project: a rolling flower cart built from scratch, with a welded steel base on casters, a wooden cabinet and a striped canopy, designed to come apart for transport.",
+      "facts": [
+        {
+          "label": "What",
+          "value": "A rolling flower cart, now used by my sister's sorority"
+        },
+        {
+          "label": "When",
+          "value": "May 2025"
+        },
+        {
+          "label": "My role",
+          "value": "Sketched the plan and did most of the build myself"
+        },
+        {
+          "label": "Materials",
+          "value": "Steel tubing, casters, OSB and plywood, wood trim, paint and a striped canopy, from around the house and from the store"
+        },
+        {
+          "label": "Tools",
+          "value": "Angle grinder, welder, clamps and a drill"
+        },
+        {
+          "label": "Photos",
+          "value": "Taken by my dad while I worked"
+        }
+      ],
+      "sections": [
+        {
+          "heading": "The plan",
+          "paragraphs": [
+            "I sketched a plan first, and designed the cart to come apart easily so it could be transported."
+          ]
+        },
+        {
+          "heading": "The base",
+          "bullets": [
+            "Squared the steel tubing with clamps and a wooden guide, then welded it into a frame with corner braces",
+            "Bolted four casters underneath",
+            "Primed the steel"
+          ]
+        },
+        {
+          "heading": "The cabinet and canopy",
+          "bullets": [
+            "Set an OSB floor into the steel base",
+            "Built wooden frames with pocket screws and painted them white",
+            "Added plywood panels",
+            "Topped it with a gold frame, a pink and white striped canopy, and buckets for the flowers"
+          ]
+        },
+        {
+          "heading": "Moving it",
+          "paragraphs": [
+            "It comes apart and fits in the back of a car, as in the last photo."
+          ]
+        }
+      ],
+      "photos": [
+        {
+          "src": "images/projects/flower-cart/finished.jpg",
+          "alt": "The finished flower cart in a driveway: a white wooden cabinet on a steel base, a wagon wheel on the side, gold posts and a pink and white striped canopy.",
+          "caption": "The finished cart.",
+          "position": "50% 38%"
+        },
+        {
+          "src": "images/projects/flower-cart/grinder.jpg",
+          "alt": "An angle grinder next to steel tubing and a board clamped to sawhorses on a driveway.",
+          "caption": "Cutting tools and steel tubing on the sawhorses."
+        },
+        {
+          "src": "images/projects/flower-cart/frame-layout.jpg",
+          "alt": "A corner of the steel frame clamped against a wooden guide and a square on the driveway.",
+          "caption": "Squaring the frame before welding."
+        },
+        {
+          "src": "images/projects/flower-cart/welding.jpg",
+          "alt": "Me welding the steel base frame on the driveway in leather gloves, with sparks flying.",
+          "caption": "Welding the base."
+        },
+        {
+          "src": "images/projects/flower-cart/base-casters.jpg",
+          "alt": "The rectangular steel base frame with metal corner braces, and four casters laid out inside it.",
+          "caption": "The base with its corner braces, and the four casters."
+        },
+        {
+          "src": "images/projects/flower-cart/caster-mount.jpg",
+          "alt": "Close-up of a caster bolted under a corner of the steel frame.",
+          "caption": "A caster mounted under a corner."
+        },
+        {
+          "src": "images/projects/flower-cart/priming-base.jpg",
+          "alt": "The steel base frame drying on the grass after a coat of red primer, with the primer can beside it.",
+          "caption": "Priming the base."
+        },
+        {
+          "src": "images/projects/flower-cart/face-frame.jpg",
+          "alt": "A wooden frame joined with pocket screws, lying on the OSB floor of the cart, with a drill and a box of screws.",
+          "caption": "Pocket-screwed wooden frame on the cart's floor."
+        },
+        {
+          "src": "images/projects/flower-cart/cabinet-frame.jpg",
+          "alt": "The white wooden cabinet frame standing on the base in a garage.",
+          "caption": "The cabinet frame on the base."
+        },
+        {
+          "src": "images/projects/flower-cart/canopy-and-buckets.jpg",
+          "alt": "The cart in a garage with gold posts, a pink and white striped canopy and four black flower buckets.",
+          "caption": "Canopy and flower buckets on."
+        },
+        {
+          "src": "images/projects/flower-cart/packed-for-transport.jpg",
+          "alt": "The cart taken apart and packed into the back of an SUV on moving blankets.",
+          "caption": "Taken apart and packed for the trip."
+        }
+      ],
+      "publish": true
+    },
+    {
       "id": "syp",
       "title": "syp",
       "eyebrow": "Student hydration-tech startup · Engineering Consultant",
@@ -524,7 +651,20 @@
           ]
         }
       ],
-      "photos": [],
+      "photos": [
+        {
+          "src": "images/projects/syp/efest-award-sign.jpg",
+          "alt": "Me holding a syp, University of South Florida sign in front of the e-Fest backdrop.",
+          "caption": "Me at e-Fest 2026 with syp's sign.",
+          "position": "50% 45%"
+        },
+        {
+          "src": "images/projects/syp/efest-award-stage.jpg",
+          "alt": "The syp team on stage at e-Fest 2026 under a slide reading Brand Builder Award, 2026 Second Place, syp, University of South Florida.",
+          "caption": "On stage at e-Fest 2026 after winning second place for the Brand Builder Award.",
+          "position": "50% 18%"
+        }
+      ],
       "publish": true
     },
     {
@@ -580,7 +720,25 @@
           ]
         }
       ],
-      "photos": [],
+      "photos": [
+        {
+          "src": "images/projects/nrc-spinner/spinner.jpg",
+          "alt": "A hand holding the robot's pink, yellow and blue spinner, a bar shape with cut-outs, over a workbench.",
+          "caption": "The spinner.",
+          "position": "50% 50%"
+        },
+        {
+          "src": "images/projects/nrc-spinner/electronics.jpg",
+          "alt": "Hands wiring the robot's electronics on its black perforated chassis, with the pink and yellow spinner mounted at the front.",
+          "caption": "Wiring the electronics, with the spinner mounted."
+        },
+        {
+          "src": "images/projects/nrc-spinner/test-drive-poster.jpg",
+          "video": "images/projects/nrc-spinner/test-drive.mp4",
+          "alt": "Video: the robot driving across a carpeted floor in a hallway.",
+          "caption": "The robot in action on a test drive, April 2025 (no sound)."
+        }
+      ],
       "publish": true
     },
     {
@@ -631,6 +789,81 @@
       "publish": true
     },
     {
+      "id": "drawing-robot",
+      "date": "2024-10",
+      "dateLabel": "Fall 2024",
+      "dateIsApprox": true,
+      "title": "Built a robot that writes text",
+      "org": null,
+      "location": null,
+      "category": "engineering",
+      "status": "done",
+      "tier": "core",
+      "summary": "I built it for my robotics class to write out text. It drives across a whiteboard with a marker on an arm.",
+      "details": [],
+      "photos": [
+        {
+          "src": "images/projects/drawing-robot/drawing-robot-poster.jpg",
+          "video": "images/projects/drawing-robot/drawing-robot.mp4",
+          "alt": "Video: a robot with a marker on a wooden arm driving across a whiteboard and drawing blue lines.",
+          "caption": "On a whiteboard with its marker (no sound)."
+        }
+      ],
+      "link": null,
+      "publish": true
+    },
+    {
+      "id": "hs-robotics",
+      "date": "2025-01",
+      "dateLabel": "Winter 2025",
+      "dateIsApprox": true,
+      "title": "1st of 13 teams in a robotics competition",
+      "org": "Columbus Academy",
+      "location": "Gahanna, OH",
+      "category": "engineering",
+      "status": "done",
+      "tier": "core",
+      "summary": "I led a three-person team and drove our tube-collecting robot. Teams from several classes scored points on autonomous and driver-controlled tasks, and ours finished first of 13.",
+      "details": [],
+      "photos": [
+        {
+          "src": "images/projects/tube-robot/winning-team.jpg",
+          "alt": "Three students in a classroom lab holding up their tube-collecting robot and pointing up for first place.",
+          "caption": "My team with our robot after winning. I'm on the right."
+        }
+      ],
+      "link": null,
+      "publish": true
+    },
+    {
+      "id": "gyro-car",
+      "date": "2025-03",
+      "dateLabel": "March 2025",
+      "dateIsApprox": true,
+      "title": "Built a hand-controlled Arduino car",
+      "org": null,
+      "location": null,
+      "category": "engineering",
+      "status": "done",
+      "tier": "core",
+      "summary": "The car drives based on the orientation of your hand: you wear a glove with a gyro sensor in it, and the car responds to how you move.",
+      "details": [],
+      "photos": [
+        {
+          "src": "images/projects/gyro-car/electronics.jpg",
+          "alt": "Two Arduino boards wired to a breadboard during the build.",
+          "caption": "The electronics during the build."
+        },
+        {
+          "src": "images/projects/gyro-car/car.jpg",
+          "alt": "An Arduino and wiring mounted in the small car's chassis between its wheels.",
+          "caption": "The car's Arduino and wiring."
+        }
+      ],
+      "link": null,
+      "publish": true
+    },
+    {
       "id": "nrc-2025",
       "date": "2025-04",
       "dateLabel": "April 2025",
@@ -670,6 +903,22 @@
         "Caddied for members"
       ],
       "link": null,
+      "publish": true
+    },
+    {
+      "id": "flower-cart",
+      "date": "2025-05",
+      "dateLabel": "May 2025",
+      "dateIsApprox": false,
+      "title": "Senior design project: built a flower cart from scratch",
+      "org": null,
+      "location": null,
+      "category": "engineering",
+      "status": "done",
+      "tier": "core",
+      "summary": "A rolling cart with a welded steel base, a wooden cabinet and a striped canopy, from materials from around the house and the store. I designed it to come apart for transport, and my sister's sorority uses it now.",
+      "details": [],
+      "link": "projects/flower-cart/",
       "publish": true
     },
     {

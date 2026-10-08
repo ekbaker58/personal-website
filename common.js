@@ -109,8 +109,52 @@
     return isSafeHref(project.href) ? project.href : `projects/${project.id}/`;
   }
 
-  function usablePhotos(project) {
-    return (project.photos || []).filter(photo => isPhotoPath(photo.src) && isFilled(photo.alt));
+  // Videos must be .mp4 files in the images/ folder (H.264, no sound; see NOTES.md).
+  function isVideoPath(src) {
+    return typeof src === 'string' && /^images\/[\w./-]+\.mp4$/i.test(src) && !src.includes('..');
+  }
+
+  // A photo needs a file and alt text. A video entry also has "video": its "src" is the still shown before it plays.
+  function usablePhotos(item) {
+    return (item.photos || []).filter(photo => isPhotoPath(photo.src) && isFilled(photo.alt) && (!photo.video || isVideoPath(photo.video)));
+  }
+
+  // "position" picks which part of a photo stays in view when it's cropped, e.g. "50% 30%" (across, down).
+  function applyPosition(img, photo) {
+    if (typeof photo.position === 'string' && /^\d{1,3}% \d{1,3}%$/.test(photo.position)) img.style.objectPosition = photo.position;
+  }
+
+  // One photo or video with its caption. Photos open full size in a new tab; videos play in place, without sound.
+  function renderMedia(photo, root, className, openLabel, lazy = true) {
+    const figure = el('figure', className);
+    if (photo.video) {
+      figure.classList.add('is-video');
+      const video = el('video');
+      video.src = resolveHref(photo.video, root);
+      video.poster = resolveHref(photo.src, root);
+      video.controls = true;
+      video.muted = true;
+      video.playsInline = true;
+      video.preload = 'none';
+      video.setAttribute('aria-label', photo.alt);
+      figure.append(video);
+    } else {
+      const link = el('a', 'media-link');
+      link.href = resolveHref(photo.src, root);
+      link.target = '_blank';
+      link.rel = 'noopener';
+      link.setAttribute('aria-label', `${openLabel}: ${photo.alt}`);
+      const img = el('img');
+      img.src = resolveHref(photo.src, root);
+      img.alt = photo.alt;
+      img.decoding = 'async';
+      if (lazy) img.loading = 'lazy';
+      applyPosition(img, photo);
+      link.append(img);
+      figure.append(link);
+    }
+    if (isFilled(photo.caption)) figure.append(el('figcaption', '', photo.caption));
+    return figure;
   }
 
   function statusLabel(site, status) {
@@ -131,6 +175,7 @@
       img.alt = '';
       img.loading = 'lazy';
       img.decoding = 'async';
+      applyPosition(img, photo);
       cover.append(img);
     } else {
       // No photo yet: show the project's headline result (if it has one) over the livery stripes.
@@ -253,7 +298,7 @@
   }
 
   window.EB = Object.freeze({
-    el, svg, isFilled, isSafeHref, isPhotoPath, categoryClass, resolveHref, isExternal,
+    el, svg, isFilled, isSafeHref, isPhotoPath, isVideoPath, renderMedia, categoryClass, resolveHref, isExternal,
     setupTheme, setupEmailCopy, renderNavigation, publishedProjects, projectHref, usablePhotos, statusLabel,
     renderProjectCard, renderContactPanel, renderFooter, renderLoadError, loadContent
   });
