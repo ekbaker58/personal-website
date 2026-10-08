@@ -255,6 +255,10 @@ button { font: inherit; color: inherit; }
 .hero-headline { margin-top: 26px; color: var(--ink); font-weight: 600; font-size: 1.15rem; max-width: 34rem; }
 .hero-lede { margin-top: 10px; max-width: 34rem; }
 .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.hero-more { display: flex; flex-wrap: wrap; gap: 6px 22px; margin-top: 18px; }
+.hero-more a { color: var(--ink); font-weight: 600; text-decoration-thickness: 2px; text-underline-offset: 5px; text-decoration-color: var(--orange); }
+.hero-more a::after { content: ' \2192'; content: ' \2192' / ''; }
+.hero-more a:hover { color: var(--orange-ink); }
 
 .tower {
   position: relative;
@@ -718,7 +722,7 @@ details[open] .stop-toggle { background: var(--c); }
 /* ---------- print ---------- */
 @media print {
   :root, :root[data-theme="dark"] { --paper: #fff; --surface: #fff; --surface-2: #fff; --ink: #111; --body: #222; --muted: #444; --line: #bbb; color-scheme: light; }
-  .topbar, .hero-shapes, .hero-actions, .track-svg, .track-flag, .track-controls, .hud, .cabinet, .game-actions, .footer-button, .checker, .watch, .skip { display: none !important; }
+  .topbar, .hero-shapes, .hero-actions, .hero-more, .track-svg, .track-flag, .track-controls, .hud, .cabinet, .game-actions, .footer-button, .checker, .watch, .skip { display: none !important; }
   body { font-size: 10.5pt; }
   .hero { padding-top: 0; }
   .hero-inner { padding-bottom: 12px; }

@@ -129,14 +129,29 @@
     copy.append(el('p', 'hero-headline', hero.headline));
     if (isFilled(hero.lede)) copy.append(el('p', 'hero-lede', hero.lede));
 
+    // Contact buttons up top, so visitors can reach Ethan without scrolling. The addresses come from
+    // contact.links (the one place links are kept); a button only shows once its link is filled in.
+    const links = (site.contact.links || []).filter(link => isSafeHref(link.href));
+    const linkedin = links.find(link => /^https:\/\/(www\.)?linkedin\.com\//.test(link.href));
+    const email = links.find(link => link.href.startsWith('mailto:'));
     const actions = el('div', 'hero-actions');
-    [hero.primaryAction, hero.secondaryAction].forEach((action, index) => {
-      if (!action || !isSafeHref(action.href)) return;
-      const link = el('a', index === 0 ? 'btn btn-solid' : 'btn btn-outline', action.label);
-      link.href = action.href;
-      actions.append(link);
+    [[linkedin, hero.connect && hero.connect.linkedinLabel], [email, hero.connect && hero.connect.emailLabel]].forEach(([link, label]) => {
+      if (!link || !isFilled(label)) return;
+      const button = el('a', actions.childElementCount ? 'btn btn-outline' : 'btn btn-solid', label);
+      button.href = link.href;
+      if (link.href.startsWith('https://')) { button.target = '_blank'; button.rel = 'noopener'; }
+      actions.append(button);
     });
-    copy.append(actions);
+    if (actions.childElementCount) copy.append(actions);
+
+    const more = el('p', 'hero-more');
+    [hero.primaryAction, hero.secondaryAction].forEach(action => {
+      if (!action || !isSafeHref(action.href)) return;
+      const link = el('a', '', action.label);
+      link.href = action.href;
+      more.append(link);
+    });
+    if (more.childElementCount) copy.append(more);
 
     inner.append(copy, renderTower(site.stats));
     section.append(shapes, inner, el('div', 'checker'));

@@ -7,6 +7,10 @@
       "headline": "Industrial Engineering @ USF · Formula SAE steering · startup hardware",
       "location": "Columbus, OH · Tampa, FL",
       "lede": "I'm designing the steering for Bulls Racing's next Formula SAE car, consulting on hardware for a student startup, and building party games for my friends in my spare time.",
+      "connect": {
+        "linkedinLabel": "Connect on LinkedIn",
+        "emailLabel": "Email me"
+      },
       "primaryAction": {
         "label": "Drive the timeline",
         "href": "#track"
