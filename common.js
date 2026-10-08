@@ -176,6 +176,8 @@
       img.loading = 'lazy';
       img.decoding = 'async';
       applyPosition(img, photo);
+      // "fit": "contain" shows the whole photo on the card instead of cropping it (good for tall product shots).
+      if (photo.fit === 'contain') cover.classList.add('is-contain');
       cover.append(img);
     } else {
       // No photo yet: show the project's headline result (if it has one) over the livery stripes.

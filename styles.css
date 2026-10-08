@@ -769,6 +769,8 @@ details[open] .stop-toggle { background: var(--c); }
 .project-card-link:focus-visible { outline: none; }
 .project-card-cover { position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: var(--surface-2); border-bottom: 5px solid var(--c); }
 .project-card-cover img { width: 100%; height: 100%; object-fit: cover; }
+.project-card-cover.is-contain { background: var(--surface-2); }
+.project-card-cover.is-contain img { object-fit: contain; }
 .project-card-cover.is-blank { background: color-mix(in srgb, var(--c) 16%, var(--surface)); }
 .project-card-band { position: absolute; left: -10%; right: -10%; height: 26px; border-radius: 26px; transform: rotate(-7deg); }
 .project-card-band.band-a { bottom: 42%; background: var(--c); }

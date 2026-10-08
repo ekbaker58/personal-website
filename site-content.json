@@ -527,14 +527,30 @@
           "paragraphs": [
             "It comes apart and fits in the back of a car, as in the last photo."
           ]
+        },
+        {
+          "heading": "In use",
+          "paragraphs": [
+            "My sister's sorority uses the cart at its events: as a flower stand, and set up as a soda bar."
+          ]
         }
       ],
       "photos": [
         {
+          "src": "images/projects/flower-cart/in-use-flowers.jpg",
+          "alt": "The white flower cart filled with buckets of white, pink and yellow flowers at a sorority event, with a Kappa Delta poster on the front panel.",
+          "caption": "In use as a flower stand at a sorority event.",
+          "fit": "contain"
+        },
+        {
+          "src": "images/projects/flower-cart/in-use-soda-bar.jpg",
+          "alt": "The cart set up as a soda bar at a sorority event, with drinks and a tray of strawberries on top and Kappa Delta lettering on the front.",
+          "caption": "Set up as a soda bar at a sorority event."
+        },
+        {
           "src": "images/projects/flower-cart/finished.jpg",
           "alt": "The finished flower cart in a driveway: a white wooden cabinet on a steel base, a wagon wheel on the side, gold posts and a pink and white striped canopy.",
-          "caption": "The finished cart.",
-          "position": "50% 38%"
+          "caption": "The finished cart in May 2025."
         },
         {
           "src": "images/projects/flower-cart/grinder.jpg",
