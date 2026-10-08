@@ -246,7 +246,7 @@
       "interests": [
         {
           "title": "Cars",
-          "text": "Porsche GT cars, the Cayman most of all. I go to Barrett-Jackson Columbus when I can.",
+          "text": "Porsche GT cars, the Cayman most of all. I go to Rides by the River every month and Cars and Coffee at The Motor Enclave, plus Barrett-Jackson Columbus when I can.",
           "category": "engineering",
           "shape": "circle"
         },
@@ -258,25 +258,25 @@
         },
         {
           "title": "Golf",
-          "text": "I caddied for two years at a Top-100 private club, and I've been to the Memorial Tournament at Muirfield Village.",
+          "text": "I've played most of my life and went to the state tournament twice. I also caddied for two years at a Top-100 private club, and I've been to the Memorial Tournament at Muirfield Village.",
           "category": "education",
           "shape": "flag"
         },
         {
           "title": "Film",
-          "text": "I took film history at USF. After a good movie I go digging into how it was made.",
+          "text": "I love Christopher Nolan's films: Interstellar, Oppenheimer and many more. I took film history at USF, and after a good movie I go digging into how it was made.",
           "category": "work",
           "shape": "triangle"
         },
         {
           "title": "Cooking",
-          "text": "Premium cuts, cooked right. I made wagyu for my birthday.",
+          "text": "I love cooking anything, but steaks most of all. I made wagyu for my birthday.",
           "category": "life",
           "shape": "pill"
         },
         {
           "title": "Games",
-          "text": "Clash Royale and Forza Horizon, when I'm not building my own.",
+          "text": "Clash Royale, Forza Horizon and Microsoft Flight Simulator, when I'm not building my own.",
           "category": "startup",
           "shape": "diamond"
         }
