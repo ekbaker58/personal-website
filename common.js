@@ -150,6 +150,8 @@
       img.decoding = 'async';
       if (lazy) img.loading = 'lazy';
       applyPosition(img, photo);
+      // "fit": "contain" shows the whole photo in the gallery too, instead of cropping it to the tile
+      if (photo.fit === 'contain') figure.classList.add('is-contain');
       link.append(img);
       figure.append(link);
     }

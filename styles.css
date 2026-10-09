@@ -846,6 +846,7 @@ details[open] .stop-toggle { background: var(--c); }
 .project-photos { display: grid; gap: 22px; }
 @media (min-width: 720px) { .project-photos { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .project-photo img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border: 2px solid var(--line); border-radius: var(--radius-md); transition: border-color .15s ease; }
+.project-photo.is-contain img { object-fit: contain; background: var(--surface-2); }
 .media-link:hover img { border-color: var(--ink); }
 .project-photo.is-video video { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: contain; background: #0a0d26; border: 2px solid var(--line); border-radius: var(--radius-md); }
 @media (min-width: 960px) { .project-more .project-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
