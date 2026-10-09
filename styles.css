@@ -615,18 +615,20 @@ details[open] .stop-toggle { background: var(--c); }
 .game-playable::after { content: ''; position: absolute; right: -60px; top: -60px; width: 170px; height: 170px; border-radius: 50%; background: var(--c); opacity: .9; z-index: 0; }
 .game-playable > * { position: relative; z-index: 1; }
 .game-playable .game-name { font-size: 2.4rem; }
+.game-playable.game-compact .game-name { font-size: 1.9rem; }
+.game-playable.game-compact::after { width: 130px; height: 130px; right: -50px; top: -50px; }
 .game-party { background: color-mix(in srgb, var(--c) 14%, var(--surface)); border: 2px solid color-mix(in srgb, var(--c) 40%, var(--line)); }
 .game-party .game-name { font-size: 1.7rem; }
 
 @media (min-width: 720px) {
   .game-grid { grid-template-columns: repeat(6, 1fr); }
-  .game-playable { grid-column: span 3; grid-template-columns: 88px 1fr; padding: 28px; }
-  .game-party { grid-column: span 2; }
+  .game-feature { grid-column: span 3; grid-template-columns: 88px 1fr; padding: 28px; }
+  .game-compact { grid-column: span 2; }
 }
 @media (min-width: 720px) and (max-width: 1023px) {
-  .game-playable { grid-column: span 6; }
-  .game-party { grid-column: span 3; }
-  .game-party:last-child { grid-column: span 6; }
+  .game-feature { grid-column: span 6; }
+  .game-compact { grid-column: span 3; }
+  .game-compact:last-child:nth-child(odd) { grid-column: span 6; }
 }
 
 /* the game player */

@@ -2,11 +2,13 @@
 # Copies the playable game files from your "Code games" folder into this website.
 # Run it after you change a game:   npm run sync-games
 #
-# Only the files a browser needs for solo play are copied (no servers, no saved player data).
-# Flappy Flock and Plinko 32 play solo. The other three only get their icons,
-# because they need the game-night server running on your Mac.
-# Two small changes are made to the copies (never to your originals): the game pages use the
-# site's own fonts instead of Google Fonts, and Plinko's page gets the <head> its server normally adds.
+# Only the files a browser needs are copied (no servers, no saved player data).
+# Flappy Flock and Plinko 32 play solo. Brain Brawl, Doodle Telephone and Hold'em have website
+# versions in each game's web/ folder (solo trivia, pass-and-play, poker against the computer), which
+# share their questions, prompts and poker rules with the game-night versions.
+# A few changes are made to the copies (never to your originals): the game pages use the site's own
+# fonts instead of Google Fonts, Plinko's page gets the <head> its server normally adds, and the shared
+# Node modules are wrapped so a browser can load them.
 
 set -euo pipefail
 
@@ -66,6 +68,41 @@ add_plinko_head() {
   echo "  head:    games/plinko-32/game.html gets a page head for phones"
 }
 
+# The web versions share files with the game-night servers: Brain Brawl's questions, Doodle Telephone's
+# prompts and the Hold'em rules. Those are Node modules, so each copy is wrapped for the browser: the file
+# runs inside a function with its own `module`, and what it exports becomes window.<NAME>. The Hold'em
+# rules ask Node for crypto.randomInt to shuffle; the wrapper hands them the browser's crypto instead.
+wrap_module() {
+  local from="$GAMES_SRC/$1" to="$GAMES_DEST/$2" name="$3"
+  if [ ! -f "$from" ]; then
+    echo "  missing: $1 (skipped)"
+    return
+  fi
+  mkdir -p "$(dirname "$to")"
+  {
+    printf '/* Copied from Code games/%s by scripts/sync-games.sh. Edit the original, then run npm run sync-games. */\n' "$1"
+    cat <<'JS'
+(function () {
+var module = { exports: {} }, exports = module.exports;
+var require = function (m) {
+  if (m !== 'crypto') throw new Error('No browser version of ' + m);
+  return {
+    // a fair random whole number in [min, max), like Node's crypto.randomInt
+    randomInt: function (min, max) {
+      if (max === undefined) { max = min; min = 0; }
+      var range = max - min, limit = Math.floor(4294967296 / range) * range, buf = new Uint32Array(1), x;
+      do { window.crypto.getRandomValues(buf); x = buf[0]; } while (x >= limit);
+      return min + (x % range);
+    }
+  };
+};
+JS
+    cat "$from"
+    printf '\nwindow.%s = module.exports;\n})();\n' "$name"
+  } > "$to"
+  echo "  wrapped: $1 -> games/$2 (window.$name)"
+}
+
 echo "Syncing games from $GAMES_SRC"
 
 # Playable in the browser (solo mode)
@@ -80,9 +117,22 @@ use_site_fonts "flappy-flock/game.html"
 use_site_fonts "plinko-32/game.html"
 add_plinko_head
 
-# Game-night-only games: icons for their cards
-copy "game-night-hub/public/icon.svg"           "game-night-hub/icon.svg"
+# Website versions of the game-night games (from each game's web/ folder)
+copy "brain-brawl/web/solo.html"                "brain-brawl/solo.html"
 copy "brain-brawl/public/icon.svg"              "brain-brawl/icon.svg"
+wrap_module "brain-brawl/questions.js"          "brain-brawl/pack.js" BB_PACK
+use_site_fonts "brain-brawl/solo.html"
+
+copy "doodle-telephone/web/pass-and-play.html"  "doodle-telephone/pass-and-play.html"
+copy "doodle-telephone/public/draw.js"          "doodle-telephone/draw.js"
 copy "doodle-telephone/public/icon.svg"         "doodle-telephone/icon.svg"
+wrap_module "doodle-telephone/prompts.js"       "doodle-telephone/prompts.js" DT_PROMPTS
+use_site_fonts "doodle-telephone/pass-and-play.html"
+
+copy "game-night-hub/web/holdem-solo.html"      "game-night-hub/holdem-solo.html"
+copy "game-night-hub/public/cards.js"           "game-night-hub/cards.js"
+copy "game-night-hub/public/icon.svg"           "game-night-hub/icon.svg"
+wrap_module "game-night-hub/holdem.js"          "game-night-hub/holdem-engine.js" Holdem
+use_site_fonts "game-night-hub/holdem-solo.html"
 
 echo "Done. Refresh the site to see the changes."

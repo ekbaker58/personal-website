@@ -576,15 +576,17 @@
     inner.append(steps);
 
     const grid = el('div', 'game-grid');
-    games.items.filter(game => game.publish).forEach(game => {
+    // the first two games get the big cards; the rest sit three to a row
+    games.items.filter(game => game.publish).forEach((game, index) => {
       const playable = isSafeHref(game.playUrl);
-      const card = el('article', `game ${categoryClass(game.category)} ${playable ? 'game-playable' : 'game-party'}`);
+      const featured = index < 2;
+      const card = el('article', `game ${categoryClass(game.category)} ${playable ? 'game-playable' : 'game-party'} ${featured ? 'game-feature' : 'game-compact'}`);
       card.setAttribute('aria-labelledby', `game-${game.id}`);
       const icon = el('img', 'game-icon');
       icon.src = game.icon;
       icon.alt = '';
-      icon.width = playable ? 88 : 56;
-      icon.height = playable ? 88 : 56;
+      icon.width = featured ? 88 : 56;
+      icon.height = featured ? 88 : 56;
       icon.loading = 'lazy';
       const name = el('h3', 'game-name', game.name);
       name.id = `game-${game.id}`;
@@ -595,14 +597,14 @@
       if (playable) {
         text.append(el('p', 'game-note', game.soloNote));
         const actions = el('div', 'game-actions');
-        const play = el('button', 'btn btn-solid', `${games.playLabel} ${game.name}`);
+        const play = el('button', 'btn btn-solid', `${games.playLabel} ${game.playName || game.name}`);
         play.type = 'button';
         play.addEventListener('click', () => openCabinet(game, games));
         const newTab = el('a', 'btn btn-outline', games.newTabLabel);
         newTab.href = game.playUrl;
         newTab.target = '_blank';
         newTab.rel = 'noopener';
-        newTab.setAttribute('aria-label', `${games.newTabLabel}: ${game.name}`);
+        newTab.setAttribute('aria-label', `${games.newTabLabel}: ${game.playName || game.name}`);
         actions.append(play, newTab);
         text.append(actions);
       } else {
@@ -621,13 +623,13 @@
 
   function openCabinet(game, games) {
     cabinetOpener = document.activeElement;
-    document.querySelector('[data-cabinet-title]').textContent = game.name;
+    document.querySelector('[data-cabinet-title]').textContent = game.playName || game.name;
     const newTab = document.querySelector('[data-cabinet-newtab]');
     newTab.href = game.playUrl;
     newTab.textContent = games.newTabLabel;
     document.querySelector('[data-cabinet-close]').textContent = games.closeLabel;
     const frame = el('iframe', 'cabinet-frame');
-    frame.title = game.name;
+    frame.title = game.playName || game.name;
     frame.src = game.playUrl;
     frame.addEventListener('load', () => frame.focus());
     cabinetScreen.replaceChildren(frame);

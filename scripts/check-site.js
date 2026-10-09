@@ -161,6 +161,14 @@ games.forEach(game => {
     if (/fonts\.(googleapis|gstatic)\.com/.test(page)) {
       warnings.push(`${game.playUrl} loads fonts from Google, so players contact Google's servers. Run npm run sync-games to switch it to the site's own fonts.`);
     }
+    // the scripts and styles the game page loads from next to itself (questions, prompts, card art, poker rules)
+    const dir = path.posix.dirname(game.playUrl);
+    for (const [, ref] of page.matchAll(/<(?:script|link)\b[^>]*?\b(?:src|href)="([^"]+)"/gi)) {
+      if (/^(?:[a-z]+:|\/\/|#|data:)/i.test(ref)) continue;
+      const file = path.posix.normalize(path.posix.join(dir, ref.split(/[?#]/)[0]));
+      if (!exists(file)) problems.push(`${game.name} needs ${file}, which is missing. Run npm run sync-games.`);
+    }
+    if (/window\.PLINKO_ONLINE\s*=(?!=)/.test(page)) problems.push(`${game.playUrl} sets window.PLINKO_ONLINE, which locks visitors out of solo play. Remove it from the site copy.`);
   }
 });
 if (games.length && problems.length === gamesBefore) passed.push('Game files are all there');

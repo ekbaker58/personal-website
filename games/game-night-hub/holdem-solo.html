@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0d26">
+<title>Texas Hold'em · vs the computer</title>
+<link rel="icon" href="icon.svg">
+<link rel="stylesheet" href="../../fonts/games.css">
+<style>
+/* Texas Hold'em against computer players: the website version of Game Night Hub's poker table.
+   The same rules engine (holdem.js) runs right in the browser. Play chips only, no coins, no server. */
+:root{
+  color-scheme: dark;
+  --night:#0a0d26; --spot:#1d2566; --desk:#161d50; --raise:#1d2660; --rail:#2a3479; --felt:#0f5a33; --felt-2:#0a4526;
+  --ink:#f2f1ff; --muted:#9ea5da; --gold:#ffc53d; --gold-2:#f08c00; --hot:#ff4f81; --good:#5ee391; --bad:#ff6b6b;
+  --f-display:"Bungee","Arial Black",Impact,sans-serif; --f-body:"Barlow","Helvetica Neue",Arial,sans-serif; --f-cond:"Barlow Condensed","Arial Narrow",sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background-color:var(--night);background-image:radial-gradient(900px 500px at 50% -15%, var(--spot), transparent 72%);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.35;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;touch-action:manipulation}
+button:disabled{opacity:.45;cursor:not-allowed}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+h1,h2,h3,p{margin:0}
+.app{min-height:100vh;min-height:100dvh;max-width:560px;margin:0 auto;padding:0 14px calc(12px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px}
+.cap{font-family:var(--f-cond);font-weight:700;text-transform:uppercase;letter-spacing:.14em;font-size:12px;color:var(--muted)}
+.sub{color:var(--muted);font-size:14px}
+.top{display:flex;align-items:center;gap:10px;padding:calc(8px + env(safe-area-inset-top)) 0 0}
+.top h1{font-family:var(--f-display);font-weight:400;font-size:18px;color:var(--gold)}
+.top .info{margin-left:auto;text-align:right;font-family:var(--f-cond);font-weight:700;letter-spacing:.06em;font-size:13px;color:var(--muted);line-height:1.2}
+.top .help{width:34px;height:34px;border-radius:50%;border:1px solid var(--rail);background:var(--desk);font-weight:800;flex:none}
+.felt{background:radial-gradient(120% 90% at 50% 30%,var(--felt),var(--felt-2));border:3px solid #6b4a1f;border-radius:22px;padding:12px;display:flex;flex-direction:column;align-items:center;gap:8px;box-shadow:inset 0 0 30px rgba(0,0,0,.35)}
+.board{display:flex;gap:5px;justify-content:center}
+.board .card{--w:min(15vw,58px)}
+.pot{font-family:var(--f-display);font-size:18px}
+.pot small{font-family:var(--f-body);font-weight:700;font-size:13px;color:#cfe9d8;margin-left:6px;text-transform:capitalize}
+.result{background:rgba(0,0,0,.35);border-radius:12px;padding:6px 12px;font-weight:800;font-size:14px;text-align:center}
+.seats{display:flex;gap:6px;overflow-x:auto;padding:8px 0 12px}
+.st{flex:1 0 84px;min-width:84px;background:var(--desk);border:2px solid var(--rail);border-radius:12px;padding:6px 8px;text-align:center;position:relative}
+.st .a{font-size:20px;line-height:1}
+.st .n{font-weight:800;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st .s{font-family:var(--f-display);font-size:13px;color:var(--gold)}
+.st .l{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;min-height:14px}
+.st .l.think{color:var(--gold)}
+.st .cs{display:flex;gap:2px;justify-content:center;margin-top:3px}
+.st .cs .card{--w:26px}
+.st.turn{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold)}
+.st.fold{opacity:.4}
+.st.bust{opacity:.3}
+.st.me{background:var(--raise)}
+.st.won{border-color:var(--good)}
+.st .d{position:absolute;top:-7px;right:-5px;width:20px;height:20px;border-radius:50%;background:#fff;color:#111;font-weight:900;font-size:11px;display:grid;place-items:center}
+.st .bet{position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--night);border-radius:999px;padding:0 7px;font-weight:800;font-size:11px;white-space:nowrap}
+.mine{display:flex;flex-direction:column;align-items:center;gap:6px;padding:4px 0}
+.hole{display:flex;gap:10px;position:relative}
+.hole .card{--w:min(26vw,104px)}
+.hname{font-weight:800;font-size:19px;min-height:1.3em;text-align:center}
+.stack{font-family:var(--f-display);font-size:16px}
+.acts{display:grid;grid-template-columns:1fr 1.2fr 1.2fr;gap:8px}
+.acts button{border:0;border-radius:16px;padding:15px 6px;font-family:var(--f-display);font-size:17px;line-height:1.1}
+.acts .f{background:var(--raise);color:var(--ink);box-shadow:0 5px 0 var(--rail)}
+.acts .f.arm{background:var(--hot);color:#fff;box-shadow:0 5px 0 #a3204a}
+.acts .c{background:#2bb673;color:#fff;box-shadow:0 5px 0 #1a7a4b}
+.acts .r{background:linear-gradient(180deg,var(--gold),var(--gold-2));color:var(--night);box-shadow:0 5px 0 color-mix(in srgb,var(--gold-2) 55%,var(--night))}
+.acts button:active:not(:disabled){transform:translateY(3px)}
+.acts small{display:block;font-family:var(--f-body);font-weight:800;font-size:13px;margin-top:2px}
+.raise{background:var(--desk);border:1px solid var(--rail);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.raise .amt{font-family:var(--f-display);font-size:28px;text-align:center;color:var(--gold)}
+.raise input[type=range]{width:100%;accent-color:var(--gold);height:28px}
+.presets{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.presets button,.row button{border:1px solid var(--rail);background:var(--raise);border-radius:10px;padding:9px 4px;font-weight:800;font-size:14px}
+.row{display:flex;gap:8px}
+.row>*{flex:1}
+.btn{border:0;border-radius:16px;padding:14px;font-family:var(--f-display);font-size:18px;color:var(--night);background:linear-gradient(180deg,var(--gold),var(--gold-2));box-shadow:0 5px 0 color-mix(in srgb,var(--gold-2) 55%,var(--night));width:100%}
+.btn:active:not(:disabled){transform:translateY(3px)}
+.btn.alt{background:var(--raise);color:var(--ink);box-shadow:0 5px 0 var(--rail)}
+.wait{text-align:center;font-weight:700;color:var(--muted);padding:10px 0;min-height:44px}
+.card2{background:var(--desk);border:1px solid var(--rail);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.seg{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.seg.two{grid-template-columns:repeat(2,1fr)}
+.seg button{border:2px solid var(--rail);background:var(--night);border-radius:12px;padding:10px 4px;font-weight:800;line-height:1.15}
+.seg button small{display:block;font-weight:600;color:var(--muted);font-size:12px}
+.seg button[aria-pressed="true"]{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 18%,var(--desk))}
+.foes{display:flex;flex-direction:column;gap:6px}
+.foes div{display:flex;align-items:center;gap:10px;font-weight:700}
+.foes i{font-style:normal;font-size:22px;width:34px;height:34px;border-radius:50%;background:var(--raise);display:grid;place-items:center;flex:none}
+.foes span{color:var(--muted);font-weight:600;font-size:14px}
+.big{font-family:var(--f-display);font-weight:400;font-size:clamp(28px,9vw,42px);line-height:1.05;text-align:center}
+.toast{position:fixed;left:50%;top:calc(8px + env(safe-area-inset-top));transform:translateX(-50%);z-index:20;max-width:min(92vw,420px);background:var(--raise);border:1px solid var(--rail);border-radius:12px;padding:8px 14px;font-weight:700;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.45);text-align:center;pointer-events:none}
+.modal{position:fixed;inset:0;z-index:30;background:rgba(5,7,26,.94);overflow:auto;padding:20px 16px calc(20px + env(safe-area-inset-bottom))}
+.modal .in{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
+.rank{display:flex;align-items:center;gap:10px;background:var(--desk);border-radius:12px;padding:8px 10px}
+.rank .card{--w:26px}
+.rank b{display:block}
+.rank small{color:var(--muted)}
+.keys{font-size:12px;color:var(--muted);text-align:center}
+#main{flex:1;display:flex;flex-direction:column;gap:10px}
+#main .seats{margin-bottom:-6px}
+@media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important} }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top"><h1>Hold'em</h1><button class="help" id="helpBtn" type="button" aria-label="How to play and hand rankings">?</button>
+    <div class="info" id="info"></div></header>
+  <div id="main" aria-live="polite"></div>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+<div class="modal" id="help" role="dialog" aria-modal="true" aria-labelledby="helpTitle" hidden><div class="in">
+  <h2 id="helpTitle" style="font-family:var(--f-display);font-weight:400;color:var(--gold)">How to play</h2>
+  <p>You get two cards only you can see. Five shared cards come out in the middle: three (the flop), then one (the turn), then one more (the river). Your best five-card hand from all seven wins. Bet when you like your chances, fold when you don't.</p>
+  <p class="sub">On your turn: <b>Fold</b> (give up this hand), <b>Check</b> (pass if nobody has bet), <b>Call</b> (match the bet), or <b>Raise</b> (bet more). Keys: F, C, R.</p>
+  <h3 class="cap" style="margin-top:8px">Best to worst</h3>
+  <div id="ranks"></div>
+  <button class="btn" id="helpClose" type="button">Got it</button>
+</div></div>
+
+<script src="cards.js"></script>
+<script src="holdem-engine.js"></script>
+<script>
+(() => {
+'use strict';
+const H = window.Holdem;
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmt = n => Math.round(n).toLocaleString('en-US');
+const store = { get(k, d) { try { const x = localStorage.getItem('holdem.solo.' + k); return x == null ? d : JSON.parse(x); } catch (e) { return d; } }, set(k, x) { try { localStorage.setItem('holdem.solo.' + k, JSON.stringify(x)); } catch (e) {} } };
+const C = (c, cls, hi) => Cards.html(c, cls, hi);
+let toastT = 0;
+function toast(text) { const el = $('toast'); el.textContent = text; el.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { el.hidden = true; }, 2400); }
+
+// hand rankings cheat sheet (same as game night)
+const RANKS = [['Royal Flush', 'A K Q J 10, same suit', [51, 50, 49, 48, 47]], ['Straight Flush', 'Five in a row, same suit', [20, 19, 18, 17, 16]], ['Four of a Kind', 'Four cards of one rank', [12, 25, 38, 51, 3]],
+  ['Full House', 'Three of a kind plus a pair', [11, 24, 37, 5, 18]], ['Flush', 'Any five of one suit', [49, 45, 42, 40, 39]], ['Straight', 'Five in a row, any suits', [7, 19, 31, 43, 3]],
+  ['Three of a Kind', 'Three cards of one rank', [9, 22, 35, 2, 16]], ['Two Pair', 'Two different pairs', [10, 23, 4, 17, 38]], ['Pair', 'Two cards of one rank', [12, 25, 6, 34, 15]], ['High Card', 'None of the above: your highest card plays', [12, 36, 20, 4, 41]]];
+$('ranks').innerHTML = RANKS.map(([n, d, cs]) => `<div class="rank"><span style="display:flex;gap:2px">${cs.map(c => C(c)).join('')}</span><span><b>${n}</b><small>${d}</small></span></div>`).join('');
+let helpOpener = null;
+$('helpBtn').onclick = () => { helpOpener = document.activeElement; $('help').hidden = false; $('helpClose').focus(); };
+$('helpClose').onclick = () => { $('help').hidden = true; if (helpOpener) helpOpener.focus(); };
+
+// ---------- the computer players ----------
+// Each one estimates its chance of winning against the hands still in (by dealing out random hands a few hundred
+// times), compares that with the price of calling, and adds a little personality.
+const BOTS = [
+  { id: 'b1', name: 'Tilly', avatar: '🐢', style: 'tight', blurb: 'Waits for good cards' },
+  { id: 'b2', name: 'Max', avatar: '🦊', style: 'loose', blurb: 'Bets big and bluffs' },
+  { id: 'b3', name: 'Dot', avatar: '🐼', style: 'sticky', blurb: 'Calls almost anything' },
+  { id: 'b4', name: 'Ziggy', avatar: '🤖', style: 'solid', blurb: 'Plays it by the numbers' },
+  { id: 'b5', name: 'Luna', avatar: '🦉', style: 'tricky', blurb: 'Hard to read' },
+];
+const STYLE = {
+  // raise: how strong a hand must be to raise (1 = average); call: how much it needs the price to be right;
+  // limp: how strong to just call the big blind; bluff and slow: how often it bets with nothing or checks a big hand
+  tight: { raise: 1.75, call: 1.15, limp: 1.05, bluff: 0.03, slow: 0.05 },
+  loose: { raise: 1.3, call: 0.9, limp: 0.7, bluff: 0.16, slow: 0 },
+  sticky: { raise: 2.2, call: 0.6, limp: 0.6, bluff: 0.02, slow: 0.1 },
+  solid: { raise: 1.5, call: 1, limp: 0.9, bluff: 0.07, slow: 0.05 },
+  tricky: { raise: 1.45, call: 0.95, limp: 0.8, bluff: 0.12, slow: 0.25 },
+};
+function winChance(hole, board, opps, iters) {
+  const used = new Set(hole.concat(board)), deck = [];
+  for (let c = 0; c < 52; c++) if (!used.has(c)) deck.push(c);
+  const needBoard = 5 - board.length, need = needBoard + 2 * opps;
+  let win = 0;
+  for (let it = 0; it < iters; it++) {
+    for (let i = 0; i < need; i++) { const j = i + Math.floor(Math.random() * (deck.length - i)); const t = deck[i]; deck[i] = deck[j]; deck[j] = t; }
+    const full = board.concat(deck.slice(0, needBoard));
+    const mine = H.best(hole.concat(full)).score;
+    let lose = false, ties = 0;
+    for (let o = 0; o < opps && !lose; o++) {
+      const s = H.best([deck[needBoard + 2 * o], deck[needBoard + 2 * o + 1]].concat(full)).score;
+      if (s > mine) lose = true; else if (s === mine) ties++;
+    }
+    if (!lose) win += 1 / (1 + ties);
+  }
+  return win / iters;
+}
+function botMove(pid) {
+  const h = table.hand, L = table.legal(pid), me = h.players.find(p => p.pid === pid), st = STYLE[botOf(pid).style];
+  const opps = h.players.filter(p => !p.folded && p.pid !== pid).length;
+  const e = winChance(me.cards, h.board, opps, h.board.length ? 260 : 180);
+  const rel = e * (opps + 1);                         // 1 = an average hand against this many opponents
+  const odds = L.toCall / (L.pot + L.toCall || 1), r = Math.random(), bb = table.opts.bb;
+  const to = frac => Math.max(L.minTo, Math.min(L.maxTo, L.currentBet + Math.round((L.pot + L.toCall) * frac / bb) * bb || L.minTo));
+  if (L.canRaise) {
+    const strong = rel > st.raise + (L.toCall > 0 ? 0.3 : 0);
+    if (strong && r > st.slow) {
+      let amt = to(rel > st.raise + 0.9 ? 1 : 0.6);
+      if (amt > L.maxTo * 0.65) amt = L.maxTo;             // more than most of the stack: just shove
+      return ['raise', amt];
+    }
+    if (!strong && r < st.bluff && L.toCall <= L.pot * 0.5) return ['raise', to(0.5)];
+    // a decent hand when nobody has bet: bet about half the pot some of the time
+    if (L.canCheck && h.board.length && rel > st.raise * 0.75 && r < 0.6) return ['raise', to(0.5)];
+  }
+  if (L.canCheck) return ['check'];
+  if (h.board.length === 0 && L.toCall <= bb) return rel > st.limp ? ['call'] : ['fold'];
+  if (e >= odds * st.call) return ['call'];
+  return ['fold'];
+}
+
+// ---------- the table ----------
+const ME = 'me';
+const settings = Object.assign({ foes: 3, speed: 'normal', blinds: 'rising' }, store.get('settings', {}));
+const START = 1000, BLIND_EVERY = 10;
+let table = null, foes = [], timer = 0, raising = false, raiseTo = 0, dealtHand = 0, thinking = null, out = [], hands = 0, biggest = 0, wonHands = 0, over = null;
+const botOf = pid => foes.find(b => b.id === pid);
+const nameOf = pid => (pid === ME ? 'You' : (botOf(pid) || {}).name || '?');
+const pace = (normal, fast) => (settings.speed === 'fast' ? fast : normal);
+
+function lobby() {
+  clearTimeout(timer); table = null; over = null;
+  $('info').textContent = '';
+  const best = store.get('best', null);
+  const n = settings.foes;
+  $('main').innerHTML = `<div class="felt" style="margin-top:4px"><p class="cap" style="color:#cfe9d8">No-limit Texas Hold'em</p>
+      <div class="board">${[51, 50, 49, 48, 47].map(c => C(c)).join('')}</div>
+      <p class="pot">You vs the computer</p></div>
+    <div class="card2">
+      <div><p class="cap" style="margin-bottom:8px">Opponents</p><div class="seg" id="foes">${[1, 2, 3, 4, 5].map(k => `<button type="button" data-v="${k}" aria-pressed="${k === n}">${k}</button>`).join('')}</div></div>
+      <div class="foes">${BOTS.slice(0, n).map(b => `<div><i aria-hidden="true">${b.avatar}</i>${esc(b.name)} <span>${esc(b.blurb)}</span></div>`).join('')}</div>
+      <div><p class="cap" style="margin-bottom:8px">Blinds</p><div class="seg two" id="blinds">
+        <button type="button" data-v="rising" aria-pressed="${settings.blinds === 'rising'}">Rising<small>double every ${BLIND_EVERY} hands</small></button>
+        <button type="button" data-v="steady" aria-pressed="${settings.blinds === 'steady'}">Steady<small>always 5/10</small></button></div></div>
+      <div><p class="cap" style="margin-bottom:8px">Computer speed</p><div class="seg two" id="speed">
+        <button type="button" data-v="normal" aria-pressed="${settings.speed === 'normal'}">Normal</button>
+        <button type="button" data-v="fast" aria-pressed="${settings.speed === 'fast'}">Fast</button></div></div>
+      <p class="sub">Everyone starts with ${fmt(START)} play chips. Last one with chips wins.</p>
+      <button class="btn" id="go" type="button">Deal me in</button>
+    </div>
+    ${best ? `<p class="sub" style="text-align:center">Your best: ${best.place === 1 ? `🏆 won a ${best.of}-player table in ${best.hands} hands` : `finished #${best.place} of ${best.of}`}</p>` : ''}
+    <p class="sub" style="text-align:center">At game night everyone sits at one table with their phones and the TV shows the felt. New to poker? Tap <b>?</b> up top.</p>`;
+  const seg = (id, key, num) => { $(id).onclick = e => { const b = e.target.closest('button'); if (!b) return; settings[key] = num ? Number(b.dataset.v) : b.dataset.v; store.set('settings', settings); if (id === 'foes') lobby(); else for (const x of $(id).children) x.setAttribute('aria-pressed', x === b); }; };
+  seg('foes', 'foes', true); seg('blinds', 'blinds'); seg('speed', 'speed');
+  $('go').onclick = newGame;
+  $('go').focus({ preventScroll: true });
+}
+
+function newGame() {
+  foes = BOTS.slice(0, settings.foes);
+  table = new H.Table({ seats: foes.length + 1, sb: 5, bb: 10 });
+  table.sit(ME, 0, START);
+  foes.forEach((b, i) => table.sit(b.id, i + 1, START));
+  out = []; hands = 0; biggest = 0; wonHands = 0; over = null; raising = false;
+  nextHand();
+}
+function blindsNow() {
+  const lvl = settings.blinds === 'rising' ? Math.floor(hands / BLIND_EVERY) : 0;
+  return [5 * 2 ** lvl, 10 * 2 ** lvl];
+}
+function nextHand() {
+  clearTimeout(timer);
+  // anyone out of chips leaves the table
+  table.seats.forEach(s => { if (s && s.stack <= 0 && s.pid !== ME) { out.push(s.pid); table.leave(s.pid); } });
+  const left = table.seats.filter(s => s && s.stack > 0);
+  const mine = table.seats.find(s => s && s.pid === ME);
+  if (!mine || mine.stack <= 0) return gameOver(left.length + 1);
+  if (left.length === 1) return gameOver(1);
+  [table.opts.sb, table.opts.bb] = blindsNow();
+  table.startHand();
+  hands += 1; raising = false;
+  render(); drive();
+}
+// runs the computer players (and the pauses between streets) until it's your turn or the hand is over
+function drive() {
+  clearTimeout(timer);
+  const h = table.hand;
+  if (!h) return;
+  if (h.done) return handOver();
+  if (h.stage === 'between') {
+    thinking = null;
+    timer = setTimeout(() => { table.advance(); render(); drive(); }, h.players.find(p => p.pid === ME && !p.folded) ? pace(900, 450) : pace(600, 250));
+    return;
+  }
+  const p = table.current();
+  if (!p) return;
+  if (p.pid === ME) { thinking = null; render(); return; }
+  thinking = p.pid; render();
+  const folded = h.players.find(q => q.pid === ME).folded;
+  timer = setTimeout(() => {
+    const [move, amount] = botMove(p.pid);
+    try { table.act(p.pid, move, amount); } catch (e) { table.act(p.pid, table.legal(p.pid).canCheck ? 'check' : 'fold'); }
+    thinking = null; render(); drive();
+  }, folded ? pace(350, 150) : pace(700 + Math.random() * 600, 250 + Math.random() * 200));
+}
+function myMove(move, amount) {
+  if (!table || !table.hand || !table.current() || table.current().pid !== ME) return;
+  try { table.act(ME, move, amount); } catch (e) { toast(e.message); return; }
+  raising = false; render(); drive();
+}
+function handOver() {
+  const res = table.hand.result;
+  if (res && res.won) {
+    const total = Object.values(res.won).reduce((a, b) => a + b, 0);
+    biggest = Math.max(biggest, res.won[ME] ? total : 0);
+    if (res.won[ME]) wonHands += 1;
+  }
+  render();
+  const f = $('next'); if (f) f.focus({ preventScroll: true });
+}
+function gameOver(place) {
+  clearTimeout(timer);
+  const of = foes.length + 1;
+  over = { place, of };
+  const best = store.get('best', null);
+  // better = a higher finish, or the same finish against more players (or, for a win, in fewer hands)
+  const better = !best || place < best.place || (place === best.place && (of > best.of || (place === 1 && of === best.of && hands < best.hands)));
+  if (better) store.set('best', { place, of, hands });
+  $('info').textContent = `${hands} hands`;
+  $('main').innerHTML = `<div class="felt" style="margin-top:4px;padding:22px 12px">
+      <p class="big">${place === 1 ? '🏆 You win!' : place === 2 ? '🥈 2nd place' : place === 3 ? '🥉 3rd place' : `#${place} of ${of}`}</p>
+      <p class="pot" style="text-align:center">${place === 1 ? `You took every chip in ${hands} hands.` : 'You ran out of chips.'}</p></div>
+    <div class="card2"><p><b>${hands}</b> hands played · you won <b>${wonHands}</b>${biggest ? ` · biggest pot ${fmt(biggest)}` : ''}</p>
+      ${better && best ? '<p style="font-weight:800;color:var(--good)">New personal best!</p>' : ''}
+      <button class="btn" id="again" type="button">Play again</button>
+      <button class="btn alt" id="menu" type="button">Change the table</button></div>`;
+  $('again').onclick = newGame; $('menu').onclick = lobby;
+  $('again').focus({ preventScroll: true });
+}
+
+// ---------- drawing the table ----------
+const LAST = { SB: 'small blind', BB: 'big blind', check: 'check', call: 'call', raise: 'raise', bet: 'bet', allin: 'all in', fold: 'fold' };
+function render() {
+  if (!table || !table.hand || over) return;
+  const h = table.hand, res = h.done ? h.result : null, [sb, bb] = [table.opts.sb, table.opts.bb];
+  const lvlLeft = settings.blinds === 'rising' ? BLIND_EVERY - ((hands - 1) % BLIND_EVERY) - 1 : -1;
+  $('info').innerHTML = `Hand ${hands} · blinds ${sb}/${bb}${lvlLeft === 0 ? '<br>doubling next hand' : lvlLeft > 0 ? `<br>up in ${lvlLeft + 1} hands` : ''}`;
+  const me = h.players.find(p => p.pid === ME), mySeat = table.seats.find(s => s && s.pid === ME);
+  const L = table.legal(ME);
+  // at the end of a hand, light up the winning five cards
+  const top = res && res.showdown && res.pots[0] ? res.hands[res.pots[0].winners[0]] : null, hi = new Set(top ? top.best : []);
+  let winText = '';
+  if (res) winText = res.pots.map(p => `${p.winners.map(nameOf).join(' & ')} ${p.winners.length > 1 ? 'split' : p.winners[0] === ME ? 'win' : 'wins'} ${fmt(p.amount)}${p.hand ? ' with ' + esc(p.hand) : ''}`).join(' · ');
+  const seats = table.seats.map(s => {
+    if (!s) return '';
+    const p = h.players.find(q => q.pid === s.pid), isMe = s.pid === ME, b = botOf(s.pid);
+    const shown = res && res.showdown && res.hands[s.pid] && !isMe;
+    const won = res && res.won && res.won[s.pid];
+    const label = won ? `<span style="color:var(--good)">won ${fmt(won)}</span>` : thinking === s.pid ? 'thinking…' : p ? (p.allin ? 'all in' : LAST[p.last] || '') : '';
+    return `<div class="st ${!res && h.players[h.toAct] && h.players[h.toAct].pid === s.pid && h.stage === 'betting' ? 'turn' : ''} ${p && p.folded ? 'fold' : ''} ${isMe ? 'me' : ''} ${won ? 'won' : ''}">
+      ${p && p.seat === h.button ? '<span class="d" aria-label="Dealer button">D</span>' : ''}<div class="a" aria-hidden="true">${isMe ? '🙂' : esc(b.avatar)}</div>
+      <div class="n">${esc(isMe ? 'You' : b.name)}</div><div class="s">${fmt(s.stack)}</div>
+      <div class="l ${thinking === s.pid ? 'think' : ''}">${label}</div>
+      ${shown ? `<div class="cs">${res.hands[s.pid].cards.map(c => C(c, '', hi.has(c))).join('')}</div>` : ''}
+      ${p && p.bet ? `<span class="bet">${fmt(p.bet)}</span>` : ''}</div>`;
+  }).join('');
+  const myName = me && me.cards.length ? H.describe(me.cards, h.board) : '';
+  const fresh = dealtHand !== h.no;
+  const status = res ? '' : L ? '' : me.folded ? 'You folded. Watching the rest of the hand…' : thinking ? `${esc(nameOf(thinking))} is thinking…` : '';
+  $('main').innerHTML = `<div class="felt"><div class="board">${[0, 1, 2, 3, 4].map(i => C(h.board[i] != null ? h.board[i] : null, '', hi.has(h.board[i]))).join('')}</div>
+      ${res ? `<p class="result">${winText}</p>` : `<p class="pot">Pot ${fmt(table.potTotal())}<small>${esc(h.street)}</small></p>`}</div>
+    <div class="seats">${seats}</div>
+    <div class="mine"><div class="hole">${me.cards.map(c => C(c, fresh ? 'deal' : (me.folded ? 'dim' : ''), hi.has(c))).join('')}</div>
+      <p class="hname">${me.folded ? 'Folded' : esc(myName)}</p>
+      <p class="stack">${fmt(mySeat ? mySeat.stack : 0)} chips in front of you</p></div>
+    ${res ? `<button class="btn" id="next" type="button">Deal the next hand</button>` : L ? actionsHtml(L) : `<p class="wait">${status}</p>`}
+    <div class="row" style="margin-top:auto"><button type="button" id="quit">🚪 Leave the table</button></div>`;
+  dealtHand = h.no;
+  wire(L);
+}
+function actionsHtml(L) {
+  if (raising) {
+    const min = L.minTo, max = L.maxTo, pot = L.pot + L.toCall;
+    raiseTo = Math.max(min, Math.min(max, raiseTo || min));
+    const half = Math.max(min, Math.min(max, L.currentBet + Math.round(pot / 2))), full = Math.max(min, Math.min(max, L.currentBet + pot));
+    return `<div class="raise"><p class="cap" style="text-align:center">${L.currentBet ? 'Raise to' : 'Bet'}</p><p class="amt" id="rAmt">${fmt(raiseTo)}</p>
+      <input type="range" id="rng" min="${min}" max="${max}" step="1" value="${raiseTo}" aria-label="Amount">
+      <div class="presets"><button type="button" data-to="${min}">Min</button><button type="button" data-to="${half}">½ pot</button><button type="button" data-to="${full}">Pot</button><button type="button" data-to="${max}">All in</button></div>
+      <div class="row"><button type="button" id="rBack">Back</button><button type="button" id="rGo" style="background:var(--gold);color:var(--night);border-color:var(--gold)">${raiseTo >= max ? 'All in!' : (L.currentBet ? 'Raise' : 'Bet')}</button></div></div>`;
+  }
+  return `<div class="acts"><button class="f" type="button" id="aFold">Fold</button>
+    <button class="c" type="button" id="aCall">${L.canCheck ? 'Check' : L.toCall >= L.stack ? 'All in' : 'Call'}${L.canCheck ? '' : `<small>${fmt(L.toCall)}</small>`}</button>
+    <button class="r" type="button" id="aRaise" ${L.canRaise ? '' : 'disabled'}>${L.currentBet ? 'Raise' : 'Bet'}<small>${L.canRaise ? (L.minTo >= L.maxTo ? 'all in' : fmt(L.minTo) + '+') : '—'}</small></button></div>
+    <p class="keys">Keys: F fold · C ${L.canCheck ? 'check' : 'call'} · R ${L.currentBet ? 'raise' : 'bet'}</p>`;
+}
+let foldArmed = 0, quitArmed = 0;
+function wire(L) {
+  const on = (id, f) => { if ($(id)) $(id).onclick = f; };
+  on('aFold', () => {
+    // folding when checking is free is almost always a misclick: ask once
+    if (L.canCheck && Date.now() - foldArmed > 3000) { foldArmed = Date.now(); $('aFold').classList.add('arm'); $('aFold').textContent = 'Sure? Check is free'; return; }
+    myMove('fold');
+  });
+  on('aCall', () => myMove('call'));
+  on('aRaise', () => { raising = true; raiseTo = L.minTo; render(); const g = $('rGo'); if (g) g.focus(); });
+  on('rBack', () => { raising = false; render(); });
+  on('rGo', () => myMove('raise', raiseTo));
+  const setTo = v => { raiseTo = v; $('rng').value = v; $('rAmt').textContent = fmt(v); $('rGo').textContent = v >= L.maxTo ? 'All in!' : (L.currentBet ? 'Raise' : 'Bet'); };
+  if ($('rng')) $('rng').oninput = e => setTo(Number(e.target.value));
+  for (const b of document.querySelectorAll('[data-to]')) b.onclick = () => setTo(Number(b.dataset.to));
+  on('next', nextHand);
+  on('quit', () => {
+    if (Date.now() - quitArmed > 3000) { quitArmed = Date.now(); $('quit').textContent = 'Tap again to leave (this game ends)'; return; }
+    quitArmed = 0; lobby();
+  });
+}
+document.addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey || e.altKey || !$('help').hidden) { if (e.key === 'Escape' && !$('help').hidden) $('helpClose').click(); return; }
+  if (e.target.closest && e.target.closest('input')) return;
+  const k = e.key.toLowerCase();
+  if (raising) { if (k === 'escape') { raising = false; render(); } return; }
+  if (k === 'f' && $('aFold')) $('aFold').click();
+  else if (k === 'c' && $('aCall')) $('aCall').click();
+  else if (k === 'r' && $('aRaise') && !$('aRaise').disabled) $('aRaise').click();
+});
+// a hidden tab pauses the computer players
+document.addEventListener('visibilitychange', () => { if (document.hidden) clearTimeout(timer); else if (table && table.hand && !over && !table.hand.done) drive(); });
+
+lobby();
+})();
+</script>
+</body>
+</html>

@@ -196,7 +196,7 @@
     "games": {
       "heading": "Games",
       "title": "Games I built",
-      "intro": "Five party games for game night. A laptop runs them, a TV shows the big screen, and everyone plays on their own phone. Two of them also run solo, so you can play them right here.",
+      "intro": "Five party games for game night. A laptop runs them, a TV shows the big screen, and everyone plays on their own phone. Each one also has a version you can play right here: solo, against the computer, or passing one device around.",
       "steps": [
         {
           "title": "The laptop hosts",
@@ -244,7 +244,9 @@
           "tagline": "One profile and one coin wallet for every game.",
           "description": "Starts all the games with one command, keeps a leaderboard for the whole night, runs side bets, and has Texas Hold'em with a TV poker table.",
           "icon": "games/game-night-hub/icon.svg",
-          "playUrl": null,
+          "playUrl": "games/game-night-hub/holdem-solo.html",
+          "playName": "Texas Hold'em",
+          "soloNote": "Here: Texas Hold'em against 1 to 5 computer players, with play chips. Your best finish saves on your device.",
           "category": "leadership",
           "publish": true
         },
@@ -254,7 +256,8 @@
           "tagline": "Party trivia for 6 to 10 friends.",
           "description": "Trivia, Fibber (fool your friends with a fake answer), Most Likely To, a buzzer Speed Round and a Final Wager.",
           "icon": "games/brain-brawl/icon.svg",
-          "playUrl": null,
+          "playUrl": "games/brain-brawl/solo.html",
+          "soloNote": "Solo version here: Trivia, Fibber, the Speed Round and the Final Wager against the clock. Your best score saves on your device.",
           "category": "work",
           "publish": true
         },
@@ -264,7 +267,8 @@
           "tagline": "Write it, draw it, guess it.",
           "description": "Each idea passes from phone to phone. At the end the TV replays every chain stroke by stroke so the room can watch it fall apart.",
           "icon": "games/doodle-telephone/icon.svg",
-          "playUrl": null,
+          "playUrl": "games/doodle-telephone/pass-and-play.html",
+          "soloNote": "Pass-and-play here: 3 to 8 people share one phone, tablet or laptop. Names stay on that device.",
           "category": "education",
           "publish": true
         }
@@ -764,7 +768,7 @@
       "dateLabel": "September 2026",
       "category": "engineering",
       "status": "done",
-      "summary": "A laptop runs the games, a TV shows the big screen, and friends play on their phones. Two of them run right here on this site.",
+      "summary": "A laptop runs the games, a TV shows the big screen, and friends play on their phones. All five have a version you can play right here.",
       "href": "#games",
       "linkLabel": "Play them",
       "photos": [],
@@ -1102,7 +1106,7 @@
       "category": "engineering",
       "status": "done",
       "tier": "core",
-      "summary": "A laptop runs the games, a TV shows the big screen, and friends play on their phones. One hub links them all with a shared profile and coin wallet. Two of them also run solo in the browser, right here on this site.",
+      "summary": "A laptop runs the games, a TV shows the big screen, and friends play on their phones. One hub links them all with a shared profile and coin wallet. Each game also has a version that runs right here in the browser: solo, against the computer, or pass-and-play.",
       "details": [
         "Game Night Hub, Flappy Flock, Brain Brawl, Doodle Telephone and Plinko 32",
         "Bot tests play full games at high speed to check for crashes, stalls and answer leaks"

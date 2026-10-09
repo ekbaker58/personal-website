@@ -1,0 +1,657 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0d26">
+<title>Doodle Telephone · Pass and play</title>
+<link rel="icon" href="icon.svg">
+<link rel="stylesheet" href="../../fonts/games.css">
+<style>
+/* Doodle Telephone, pass and play: the website version. One phone, tablet or laptop is passed around the room instead of
+   everyone using their own phone. Same rules, prompts, sketch pad and scoring as game night; no server, nothing leaves the device. */
+:root{
+  color-scheme: dark;
+  --night:#0a0d26; --spot:#1d2566; --desk:#161d50; --raise:#1d2660; --rail:#2a3479;
+  --ink:#f2f1ff; --muted:#9ea5da; --gold:#ffc53d; --gold-2:#f08c00; --hot:#ff4f81; --teal:#3fd9c4; --good:#5ee391; --bad:#ff6b6b;
+  --f-display:"Bungee","Arial Black",Impact,sans-serif;
+  --f-body:"Barlow","Helvetica Neue",Arial,sans-serif;
+  --f-cond:"Barlow Condensed","Arial Narrow","Helvetica Neue",sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background-color:var(--night);background-image:radial-gradient(900px 500px at 50% -15%, var(--spot), transparent 72%);color:var(--ink);
+  font-family:var(--f-body);font-size:16px;line-height:1.35;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;touch-action:manipulation}
+button:disabled{cursor:not-allowed}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+h1,h2,h3,p{margin:0}
+.app{min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;max-width:560px;margin:0 auto;padding:0 16px calc(10px + env(safe-area-inset-bottom))}
+.cap{font-family:var(--f-cond);font-weight:700;text-transform:uppercase;letter-spacing:.14em;font-size:12px;color:var(--muted)}
+.bar{display:flex;align-items:center;gap:10px;padding:calc(8px + env(safe-area-inset-top)) 0 8px;min-height:52px}
+.bar .logo{font-family:var(--f-display);font-size:17px;line-height:1;color:var(--gold)}
+.bar .av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-size:20px;flex:none}
+.bar .nm{font-weight:800;font-size:16px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar .quit{margin-left:auto;flex:none;border:1px solid var(--rail);background:var(--desk);border-radius:999px;padding:6px 12px;font-weight:700;font-size:14px}
+.bar .quit.arm{background:var(--hot);border-color:var(--hot);color:#fff}
+.tbar{height:6px;border-radius:3px;background:var(--raise);overflow:hidden;margin-bottom:8px;flex:none}
+.tbar i{display:block;height:100%;background:var(--gold);width:100%;transform-origin:left}
+.tbar.low i{background:var(--hot)}
+main{flex:1;display:flex;flex-direction:column;gap:12px;padding-bottom:6px;min-height:0}
+main.anim{animation:fadeIn .25s ease-out}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}}
+.center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px}
+.big{font-family:var(--f-display);font-weight:400;font-size:clamp(28px,9vw,44px);line-height:1.05}
+.gold{color:var(--gold)} .good{color:var(--good)} .bad{color:var(--bad)} .muted{color:var(--muted)}
+.q{font-weight:800;font-size:19px;line-height:1.25}
+.sub{color:var(--muted);font-size:15px}
+.card{background:var(--desk);border:1px solid var(--rail);border-radius:18px;padding:14px}
+.btn{border:0;border-radius:16px;padding:14px;font-family:var(--f-display);font-size:19px;color:var(--night);background:linear-gradient(180deg,var(--gold),var(--gold-2));
+  box-shadow:0 5px 0 color-mix(in srgb,var(--gold-2) 55%,var(--night));width:100%;flex:none}
+.btn:active:not(:disabled){transform:translateY(3px);box-shadow:0 2px 0 color-mix(in srgb,var(--gold-2) 55%,var(--night))}
+.btn:disabled{opacity:.5}
+.btn.alt{background:var(--raise);color:var(--ink);box-shadow:0 5px 0 var(--rail)}
+.text-in{background:var(--night);border:1px solid var(--rail);border-radius:14px;color:var(--ink);font:700 20px var(--f-body);padding:14px;width:100%;resize:none}
+.text-in:focus{outline:none;border-color:var(--gold)}
+.row{display:flex;gap:8px}
+.row>*{flex:1}
+
+/* setup */
+.who{display:flex;align-items:center;gap:8px}
+.who .face{width:48px;height:48px;border-radius:50%;border:0;font-size:26px;display:grid;place-items:center;flex:none;padding:0}
+.who .text-in{font-size:18px;padding:11px 12px;min-width:0}
+.who .x{width:40px;height:40px;border-radius:50%;border:1px solid var(--rail);background:var(--desk);flex:none;font-weight:800}
+.seg{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.seg.three{grid-template-columns:repeat(3,1fr)}
+.seg button{border:2px solid var(--rail);background:var(--desk);border-radius:12px;padding:10px 6px;font-weight:800;line-height:1.15}
+.seg button small{display:block;font-weight:600;color:var(--muted);font-size:12px}
+.seg button[aria-pressed="true"]{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 18%,var(--desk))}
+.field{display:flex;flex-direction:column;gap:8px;text-align:left}
+.err{color:var(--bad);font-weight:700;font-size:14px}
+
+/* pass the device */
+.pass .bigface{width:120px;height:120px;border-radius:50%;display:grid;place-items:center;font-size:66px}
+.steps{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.steps span{font-size:13px;font-weight:700;border-radius:999px;padding:3px 10px;background:var(--desk);border:1px solid var(--rail);color:var(--muted)}
+.steps span.on{background:var(--gold);border-color:var(--gold);color:var(--night)}
+.steps span.done{color:var(--ink)}
+
+/* write */
+.ideas{display:flex;flex-direction:column;gap:8px}
+.ideas button{border:1px dashed var(--rail);background:none;border-radius:12px;padding:10px 12px;text-align:left;font-weight:700;color:var(--ink)}
+.ideas button::before{content:"💡 "}
+
+/* the pad */
+.prompt{background:var(--desk);border:1px solid var(--rail);border-radius:14px;padding:9px 12px;display:flex;flex-direction:column;gap:2px;flex:none}
+.prompt b{font-size:19px;line-height:1.2;font-weight:800;overflow-wrap:anywhere}
+.prompt small{color:var(--muted);font-size:13px}
+.padwrap{position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+.padwrap canvas{display:block;border-radius:14px;background:#fff;touch-action:none;box-shadow:0 8px 24px color-mix(in srgb,#000 45%,transparent)}
+.palette{display:grid;grid-template-columns:repeat(8,1fr);gap:5px;flex:none}
+.palette button{aspect-ratio:1.5;border-radius:8px;border:2px solid var(--rail);padding:0;max-height:40px}
+.palette button[aria-pressed="true"]{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold)}
+.tools{display:flex;gap:6px;flex:none}
+.tools button{flex:1;min-width:0;height:42px;border-radius:10px;border:1px solid var(--rail);background:var(--desk);display:grid;place-items:center;font-size:18px;padding:0}
+.tools button[aria-pressed="true"]{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 18%,var(--desk))}
+.tools .dot{display:block;border-radius:50%;background:var(--ink)}
+.tools .arm{background:var(--hot);color:#fff;font-size:13px;font-weight:800}
+.art{display:block;margin:0 auto;border-radius:14px;background:#fff;box-shadow:0 8px 24px color-mix(in srgb,#000 45%,transparent)}
+
+/* the album */
+.page{display:flex;flex-direction:column;gap:10px;align-items:center;text-align:center}
+.page .by{display:flex;align-items:center;gap:6px;font-weight:700;color:var(--muted)}
+.face-sm{width:26px;height:26px;border-radius:50%;display:inline-grid;place-items:center;font-style:normal;flex:none}
+.page .said{font-weight:800;font-size:22px;background:var(--desk);border:1px solid var(--rail);border-radius:16px;padding:14px 16px;overflow-wrap:anywhere;max-width:100%}
+.hearts{display:flex;align-items:center;justify-content:center;gap:10px}
+.heart{min-width:96px;height:64px;border-radius:999px;border:0;background:var(--hot);color:#fff;font-size:28px;font-weight:800;box-shadow:0 5px 0 color-mix(in srgb,var(--hot) 50%,var(--night));padding:0 18px}
+.heart:disabled{background:var(--raise);box-shadow:0 5px 0 var(--rail);opacity:.7}
+.heart.pop{animation:pop .35s}
+.undo{border:1px solid var(--rail);background:var(--desk);border-radius:999px;padding:8px 12px;font-weight:700;font-size:14px}
+@keyframes pop{50%{transform:scale(1.12)}}
+.verdict{font-family:var(--f-display);font-size:30px;line-height:1.1}
+.compare{display:grid;gap:8px;width:100%}
+.compare div{background:var(--desk);border:1px solid var(--rail);border-radius:14px;padding:10px 12px;text-align:left}
+.compare b{display:block;font-size:18px;overflow-wrap:anywhere}
+.podium{display:flex;flex-direction:column;gap:6px;width:100%}
+.podium .r{display:flex;align-items:center;gap:10px;background:var(--desk);border:1px solid var(--rail);border-radius:14px;padding:8px 12px;font-weight:700;text-align:left}
+.podium .r .n{font-family:var(--f-display);width:28px;color:var(--gold)}
+.podium .r .p{margin-left:auto;font-family:var(--f-display)}
+.award{background:var(--desk);border:1px solid var(--gold);border-radius:14px;padding:10px 14px;font-weight:700;text-align:left;width:100%}
+
+.toast{position:fixed;left:50%;top:calc(8px + env(safe-area-inset-top));transform:translateX(-50%);z-index:20;max-width:min(92vw,420px);background:var(--raise);border:1px solid var(--rail);
+  border-radius:12px;padding:8px 14px;font-weight:700;font-size:14px;box-shadow:0 8px 24px color-mix(in srgb,#000 45%,transparent);text-align:center;pointer-events:none}
+.toast.hot{background:var(--hot);border-color:var(--hot);color:#fff}
+@media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important} }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="bar" id="bar">
+    <span class="logo" id="logo">Doodle Telephone</span>
+    <span class="av" id="meAv" hidden></span><span class="nm" id="meNm" hidden></span>
+    <button class="quit" id="quit" type="button" hidden>✕ Quit</button>
+  </header>
+  <div class="tbar" id="tbar" hidden><i id="tfill"></i></div>
+  <main id="main"></main>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="draw.js"></script>
+<script src="prompts.js"></script>
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const store = { get(k, d) { try { const x = localStorage.getItem('dt.pass.' + k); return x == null ? d : JSON.parse(x); } catch (e) { return d; } }, set(k, x) { try { localStorage.setItem('dt.pass.' + k, JSON.stringify(x)); } catch (e) {} } };
+const fmt = n => Math.round(n).toLocaleString('en-US');
+const rnd = n => { const b = new Uint32Array(1); crypto.getRandomValues(b); return b[0] % n; };
+const pick = a => a[rnd(a.length)];
+let toastT = 0;
+function toast(text, hot) { const el = $('toast'); el.textContent = text; el.className = 'toast' + (hot ? ' hot' : ''); el.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { el.hidden = true; }, 2600); }
+
+// ---------- the same rules and pieces as game night ----------
+const PROMPTS = Array.isArray(window.DT_PROMPTS) && window.DT_PROMPTS.length ? window.DT_PROMPTS : ['A cat riding a skateboard'];
+const PALETTE = ['#000000', '#ffffff', '#7a7a7a', '#c8c8c8', '#e8262b', '#ff8a1f', '#ffd21f', '#2bb34a', '#16a3d9', '#2d4fd6', '#8a3fd1', '#ff6fb5', '#8b5a2b', '#f5c9a0', '#0e6b3a', '#7fd6ff'];
+const SIZES = [5, 12, 26, 52];
+const AVATARS = ['🦊', '🐸', '🐼', '🐯', '🦁', '🐵', '🐙', '🦄', '🐧', '🐢', '🦖', '🐝', '🦉', '🐨', '🐷', '🐰', '🐻', '🐳', '🦩', '🦦', '👽', '🤖', '👻', '🎃', '🍕', '🌮', '🍩', '🚀'];
+const COLORS = ['#ff5d5d', '#4fa3ff', '#ffc53d', '#3fd9a0', '#b07bff', '#ff8a3d', '#3fd9d9', '#ff5fa2', '#9be36b', '#e0e3ff'];
+const LENGTHS = { short: 4, standard: 6 };
+const T = { write: 45000, draw: 80000, guess: 35000 };
+const TIMERS = { off: 0, relaxed: 1.4, normal: 1 };
+const MIN_PLAYERS = 3, MAX_PLAYERS = 8;
+const replayMs = d => (d && d.s.length ? Math.max(1400, Math.min(4500, 250 + d.s.length * 90)) : 0);
+
+// Did the idea survive? Compares the meaningful words, forgiving plurals and one-letter typos.
+const STOP = new Set('a an the of on in at to with and or is are was his her their its my your our this that some very it for from by as be into onto who what while has have being'.split(' '));
+function words(s) {
+  return String(s || '').toLowerCase().normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9 ]+/g, ' ')
+    .split(/\s+/).filter(w => w && !STOP.has(w)).map(w => (w.length > 4 && w.endsWith('es') && !w.endsWith('ses') ? w.slice(0, -2) : w.length > 3 && w.endsWith('s') && !w.endsWith('ss') ? w.slice(0, -1) : w));
+}
+function lev(a, b) {
+  if (Math.abs(a.length - b.length) > 1) return 2;
+  const row = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    let prev = row[0]; row[0] = i;
+    for (let j = 1; j <= b.length; j++) { const t = row[j]; row[j] = Math.min(row[j] + 1, row[j - 1] + 1, prev + (a[i - 1] === b[j - 1] ? 0 : 1)); prev = t; }
+  }
+  return row[b.length];
+}
+function close(a, b) {
+  const A = words(a), B = words(b);
+  if (!A.length || !B.length) return false;
+  const used = new Set();
+  let hit = 0;
+  for (const w of A) {
+    const j = B.findIndex((x, k) => !used.has(k) && (x === w || (w.length >= 4 && x.length >= 4 && lev(w, x) <= 1)));
+    if (j >= 0) { used.add(j); hit++; }
+  }
+  return hit / Math.max(A.length, B.length) >= 0.6;
+}
+function planKinds(n, len) {
+  let steps = Math.min(LENGTHS[len] || 6, n - 1);
+  if (steps > 1 && steps % 2) steps -= 1;               // always end on a guess so the room can compare
+  const kinds = ['write'];
+  for (let i = 0; i < steps; i++) kinds.push(i % 2 ? 'guess' : 'draw');
+  return kinds;
+}
+function randomPrompt(avoid) {
+  for (let i = 0; i < 20; i++) { const t = pick(PROMPTS); if (!avoid || !avoid.has(t)) { if (avoid) avoid.add(t); return t; } }
+  return pick(PROMPTS);
+}
+const cleanText = s => String(s || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+
+// ---------- screens ----------
+let screen = '', stopArt = () => {};
+function setMain(key, html) {
+  screen = key; stopArt(); stopArt = () => {};
+  const m = $('main'); m.classList.remove('anim'); void m.offsetWidth; m.classList.add('anim');
+  m.innerHTML = html;
+  const f = m.querySelector('[autofocus]'); if (f) f.focus({ preventScroll: true });
+}
+function header(player) {
+  $('logo').hidden = !!player; $('meAv').hidden = !player; $('meNm').hidden = !player;
+  if (player) { $('meAv').style.background = player.color; $('meAv').textContent = player.avatar; $('meNm').textContent = player.name; }
+  $('quit').hidden = !G;
+}
+const face = (p, cls) => `<i class="${cls || 'face-sm'}" style="background:${esc(p.color)}" aria-hidden="true">${esc(p.avatar)}</i>`;
+
+// ---------- setup ----------
+const settings = Object.assign({ length: 'standard', timer: 'off' }, store.get('settings', {}));
+let roster = (store.get('players', null) || []).filter(p => p && AVATARS.includes(p.avatar)).slice(0, MAX_PLAYERS);
+function freshPlayer() {
+  const usedA = new Set(roster.map(p => p.avatar)), usedC = new Set(roster.map(p => p.color));
+  return { name: '', avatar: pick(AVATARS.filter(a => !usedA.has(a))), color: COLORS.find(c => !usedC.has(c)) || pick(COLORS) };
+}
+while (roster.length < MIN_PLAYERS) roster.push(freshPlayer());
+const saveRoster = () => store.set('players', roster.map(p => ({ name: cleanText(p.name).slice(0, 16), avatar: p.avatar, color: p.color })));
+
+function setup(err) {
+  stopClock(); G = null; header(null);
+  const n = roster.length, kinds = planKinds(n, settings.length);
+  const flow = kinds.map(k => ({ write: '✍️ write', draw: '🎨 draw', guess: '🤔 guess' }[k])).join(' → ');
+  setMain('setup', `<div class="center" style="justify-content:flex-start;padding-top:2vh">
+    <h1 class="big"><span class="gold">Doodle</span><br>Telephone</h1>
+    <p class="sub" style="max-width:36ch">Write it, draw it, guess it, then watch it fall apart. Pass this device around the room: 3 to 8 people.</p>
+    <div class="card" style="width:100%;display:flex;flex-direction:column;gap:14px">
+      <div class="field"><span class="cap">Players, in the order you'll pass the device</span>
+        <div id="who" style="display:flex;flex-direction:column;gap:8px">${roster.map((p, i) => `<div class="who">
+          <button class="face" type="button" data-face="${i}" style="background:${esc(p.color)}" aria-label="Change ${esc(p.name || 'player ' + (i + 1))}'s face">${esc(p.avatar)}</button>
+          <input class="text-in" data-name="${i}" maxlength="16" autocomplete="off" value="${esc(p.name)}" placeholder="Player ${i + 1}" aria-label="Player ${i + 1} name">
+          <button class="x" type="button" data-del="${i}" aria-label="Remove player ${i + 1}" ${n <= MIN_PLAYERS ? 'disabled' : ''}>✕</button></div>`).join('')}</div>
+        ${n < MAX_PLAYERS ? '<button class="btn alt" id="add" type="button" style="font-size:16px;padding:11px">+ Add a player</button>' : ''}
+      </div>
+      <div class="field"><span class="cap">Length</span><div class="seg" id="len">
+        <button type="button" data-v="short" aria-pressed="${settings.length === 'short'}">Short<small>up to 5 rounds</small></button>
+        <button type="button" data-v="standard" aria-pressed="${settings.length === 'standard'}">Standard<small>up to 7 rounds</small></button></div>
+        <p class="sub" style="font-size:14px">With ${n} players: ${flow}. That's ${kinds.length} rounds, ${kinds.length * n} turns in all.</p></div>
+      <div class="field"><span class="cap">Timer</span><div class="seg three" id="tim">
+        <button type="button" data-v="off" aria-pressed="${settings.timer === 'off'}">Off</button>
+        <button type="button" data-v="relaxed" aria-pressed="${settings.timer === 'relaxed'}">Relaxed<small>112 s to draw</small></button>
+        <button type="button" data-v="normal" aria-pressed="${settings.timer === 'normal'}">Normal<small>80 s to draw</small></button></div></div>
+      ${err ? `<p class="err">${esc(err)}</p>` : ''}
+    </div>
+    <button class="btn" id="go" type="button">Start</button>
+    <p class="sub" style="font-size:13px;max-width:40ch">At game night everyone uses their own phone and the TV replays every chain. Names stay on this device.</p>
+  </div>`);
+  const who = $('who');
+  who.addEventListener('input', e => { const i = e.target.dataset.name; if (i != null) { roster[i].name = e.target.value; saveRoster(); } });
+  who.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.dataset.name != null) { const nx = who.querySelector(`[data-name="${Number(e.target.dataset.name) + 1}"]`); if (nx) nx.focus(); else $('go').focus(); } });
+  who.addEventListener('click', e => {
+    const f = e.target.closest('[data-face]'), d = e.target.closest('[data-del]');
+    if (f) {
+      const p = roster[f.dataset.face], used = new Set(roster.map(x => x.avatar));
+      let i = AVATARS.indexOf(p.avatar);
+      do { i = (i + 1) % AVATARS.length; } while (used.has(AVATARS[i]));
+      p.avatar = AVATARS[i]; f.textContent = p.avatar; saveRoster();
+    }
+    if (d && roster.length > MIN_PLAYERS) { roster.splice(Number(d.dataset.del), 1); saveRoster(); setup(); }
+  });
+  if ($('add')) $('add').onclick = () => { roster.push(freshPlayer()); saveRoster(); setup(); const ins = document.querySelectorAll('[data-name]'); ins[ins.length - 1].focus(); };
+  for (const [id, key] of [['len', 'length'], ['tim', 'timer']]) {
+    $(id).onclick = e => {
+      const b = e.target.closest('button'); if (!b) return;
+      settings[key] = b.dataset.v; store.set('settings', settings);
+      if (key === 'length') return setup();
+      for (const x of $(id).children) x.setAttribute('aria-pressed', x === b);
+    };
+  }
+  $('go').onclick = start;
+}
+
+// ---------- the game ----------
+let G = null;
+function start() {
+  const players = roster.map((p, i) => ({ name: cleanText(p.name).slice(0, 16) || `Player ${i + 1}`, avatar: p.avatar, color: p.color }));
+  const names = players.map(p => p.name.toLowerCase());
+  if (new Set(names).size !== names.length) return setup('Two players have the same name. Give everyone a different one.');
+  const n = players.length;
+  G = {
+    players, n, kinds: planKinds(n, settings.length), step: 0, turn: 0, pace: TIMERS[settings.timer] || 0,
+    chains: players.map((_, i) => ({ owner: i, entries: [], survived: null })),
+    stats: players.map(() => ({ pts: 0, likesDraw: 0, likesText: 0, right: 0, clear: 0, kept: 0, asleep: 0 })),
+    dealt: new Set(), album: null,
+  };
+  passScreen();
+}
+const chainFor = (i, s) => ((i - s) % G.n + G.n) % G.n;
+const who = i => G.players[i];
+
+function stepsHtml() {
+  return `<div class="steps" aria-label="Rounds">${G.kinds.map((k, i) => `<span class="${i === G.step ? 'on' : i < G.step ? 'done' : ''}">${i + 1}. ${{ write: 'Write', draw: 'Draw', guess: 'Guess' }[k]}</span>`).join('')}</div>`;
+}
+// the cover between turns: whatever the last person did is gone from the screen before the next person looks
+function passScreen() {
+  stopClock(); header(null);
+  const p = who(G.turn), k = G.kinds[G.step];
+  const what = { write: 'write something for someone else to draw', draw: 'draw what the last person wrote', guess: 'guess what the last person drew' }[k];
+  setMain(`pass:${G.step}:${G.turn}`, `<div class="center pass">
+    ${stepsHtml()}
+    <p class="cap">Turn ${G.step * G.n + G.turn + 1} of ${G.kinds.length * G.n}</p>
+    <p class="q">Pass the device to</p>
+    <div class="bigface" style="background:${esc(p.color)}" aria-hidden="true">${esc(p.avatar)}</div>
+    <p class="big">${esc(p.name)}</p>
+    <p class="sub" style="max-width:32ch">Your turn to ${what}. No peeking, everyone else!</p>
+    <button class="btn" id="go" type="button" autofocus>I'm ${esc(p.name)}. Show me</button></div>`);
+  $('go').onclick = taskScreen;
+}
+
+let task = null;
+function taskScreen() {
+  const i = G.turn, k = G.kinds[G.step], chain = G.chains[chainFor(i, G.step)], prev = chain.entries[chain.entries.length - 1];
+  task = { by: i, kind: k, chain, prev, ideas: [] };
+  header(who(i));
+  if (k === 'write') writeScreen();
+  else if (k === 'draw') drawScreen();
+  else guessScreen();
+  if (G.pace) startClock(T[k] * G.pace, () => timeUp());
+}
+function stepHead(label) { return `<span class="cap">Round ${G.step + 1} of ${G.kinds.length} · ${label}</span>`; }
+
+function writeScreen() {
+  task.ideas = [randomPrompt(G.dealt), randomPrompt(G.dealt), randomPrompt(G.dealt)];
+  setMain(`write:${G.step}:${G.turn}`, `${stepHead('Write')}
+    <h2 class="q">Write something silly for the next person to draw</h2>
+    <textarea class="text-in" id="txt" rows="2" maxlength="80" placeholder="A cat riding a skateboard" aria-label="What to draw" autofocus></textarea>
+    <div class="ideas" id="ideas"></div>
+    <div class="row"><button class="btn alt" id="more" type="button">🎲 New ideas</button></div>
+    <div style="flex:1"></div>
+    <button class="btn" id="send" type="button">Send</button>`);
+  const showIdeas = () => { $('ideas').innerHTML = task.ideas.map(x => `<button type="button">${esc(x)}</button>`).join(''); };
+  showIdeas();
+  $('ideas').onclick = e => { const b = e.target.closest('button'); if (b) { $('txt').value = b.textContent; $('txt').focus(); } };
+  $('more').onclick = () => { task.ideas = [randomPrompt(G.dealt), randomPrompt(G.dealt), randomPrompt(G.dealt)]; showIdeas(); };
+  wireText();
+}
+function guessScreen() {
+  const src = task.prev;
+  setMain(`guess:${G.step}:${G.turn}`, `${stepHead('Guess')}
+    ${src.d ? '<div class="padwrap" id="artWrap"><canvas class="art" id="art" aria-label="The drawing to guess"></canvas></div>'
+      : '<div class="card center" style="flex:none;padding:30px"><p class="big">😴</p><p class="q">The artist fell asleep!</p><p class="sub">Make up anything you like.</p></div>'}
+    <h2 class="q">What is this?</h2>
+    <input class="text-in" id="txt" maxlength="80" autocomplete="off" placeholder="Your guess" aria-label="Your guess">
+    <button class="btn" id="send" type="button">Send guess</button>`);
+  if (src.d) {
+    const wrap = $('artWrap'), size = Math.max(160, Math.min(wrap.clientWidth, wrap.clientHeight > 160 ? wrap.clientHeight : wrap.clientWidth, 520));
+    Doodle.fit($('art'), size); stopArt = Doodle.replay($('art'), src.d, 1800);
+  }
+  wireText();
+}
+function wireText() {
+  const el = $('txt');
+  el.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendText(false); } });
+  $('send').onclick = () => sendText(false);
+}
+function sendText(auto) {
+  const text = cleanText($('txt') && $('txt').value);
+  if (!text && !auto) { toast(task.kind === 'write' ? 'Write something first (or tap an idea).' : 'Type your guess first.', true); return; }
+  if (text) return handIn({ kind: 'text', by: task.by, text, late: auto || undefined });
+  handIn({ kind: 'text', by: task.by, text: randomPrompt(G.dealt), auto: task.kind === 'write' ? 'random' : 'asleep' });
+}
+
+// ---------- the sketch pad (the same tools as game night) ----------
+const pad = { d: null, color: '#000000', sizeI: 1, tool: 'pen', hist: [], cur: null, pointer: null, css: 0 };
+function drawScreen() {
+  Object.assign(pad, { d: { bg: '#ffffff', s: [] }, hist: [], cur: null, pointer: null, tool: 'pen' });
+  const src = task.prev;
+  setMain(`draw:${G.step}:${G.turn}`, `${stepHead('Draw')}
+    <div class="prompt"><span class="cap">Draw this</span><b>${esc(src.text)}</b>${src.auto === 'asleep' ? '<small>😴 The guesser fell asleep, so here\'s a random one.</small>' : src.auto === 'random' ? '<small>🎲 Nobody wrote anything, so here\'s a random one.</small>' : ''}</div>
+    <div class="padwrap" id="padWrap"><canvas id="pad" aria-label="Sketch pad"></canvas></div>
+    <div class="palette" id="palette">${PALETTE.map(c => `<button type="button" data-c="${c}" style="background:${c}" aria-label="Color ${c}" aria-pressed="${c === pad.color}"></button>`).join('')}</div>
+    <div class="tools" id="tools">
+      ${SIZES.map((s, i) => `<button type="button" data-size="${i}" aria-label="Pen size ${i + 1}" aria-pressed="${pad.sizeI === i}"><span class="dot" style="width:${Math.max(4, Math.round(s / 2.2))}px;height:${Math.max(4, Math.round(s / 2.2))}px"></span></button>`).join('')}
+      <button type="button" data-tool="eraser" aria-label="Eraser" aria-pressed="false">🧽</button>
+      <button type="button" data-tool="fill" aria-label="Fill the background with this color">🪣</button>
+      <button type="button" data-tool="undo" aria-label="Undo">↶</button>
+      <button type="button" data-tool="clear" aria-label="Clear">🗑</button>
+    </div>
+    <button class="btn" id="send" type="button">Done drawing</button>`);
+  const canvas = $('pad');
+  sizePad(); redrawPad(); wirePad(canvas);
+  $('palette').onclick = e => {
+    const b = e.target.closest('[data-c]'); if (!b) return;
+    pad.color = b.dataset.c; if (pad.tool === 'eraser') pad.tool = 'pen';
+    syncTools();
+  };
+  $('tools').onclick = e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.size != null) pad.sizeI = Number(b.dataset.size);
+    const t = b.dataset.tool;
+    if (t === 'eraser') pad.tool = pad.tool === 'eraser' ? 'pen' : 'eraser';
+    if (t === 'fill') { pad.hist.push({ t: 'bg', prev: pad.d.bg }); pad.d.bg = pad.color; redrawPad(); }
+    if (t === 'undo') undo();
+    if (t === 'clear') {
+      if (!b.classList.contains('arm')) { b.classList.add('arm'); b.textContent = 'Sure?'; setTimeout(() => { b.classList.remove('arm'); b.textContent = '🗑'; }, 2500); return; }
+      b.classList.remove('arm'); b.textContent = '🗑';
+      if (pad.d.s.length || pad.d.bg !== '#ffffff') { pad.hist.push({ t: 'clear', s: pad.d.s, bg: pad.d.bg }); pad.d = { bg: '#ffffff', s: [] }; redrawPad(); }
+    }
+    syncTools();
+  };
+  $('send').onclick = () => sendDrawing(false);
+}
+function syncTools() {
+  for (const b of $('palette').children) b.setAttribute('aria-pressed', b.dataset.c === pad.color && pad.tool !== 'eraser');
+  for (const b of $('tools').children) {
+    if (b.dataset.size != null) b.setAttribute('aria-pressed', Number(b.dataset.size) === pad.sizeI);
+    if (b.dataset.tool === 'eraser') b.setAttribute('aria-pressed', pad.tool === 'eraser');
+  }
+}
+function sizePad() {
+  const wrap = $('padWrap'), canvas = $('pad');
+  if (!wrap || !canvas) return;
+  canvas.style.width = '0px'; canvas.style.height = '0px';       // measure the space without the old canvas in it
+  const avail = Math.floor(Math.min(wrap.clientWidth, wrap.clientHeight > 120 ? wrap.clientHeight : wrap.clientWidth));
+  pad.css = Math.max(180, avail);
+  Doodle.fit(canvas, pad.css);
+}
+function redrawPad() { const c = $('pad'); if (c && pad.d) Doodle.render(c, pad.d); }
+function undo() {
+  const h = pad.hist.pop(); if (!h) return;
+  if (h.t === 'stroke') pad.d.s.pop();
+  if (h.t === 'bg') pad.d.bg = h.prev;
+  if (h.t === 'clear') pad.d = { bg: h.bg, s: h.s };
+  redrawPad();
+}
+function wirePad(canvas) {
+  const pt = (e, st) => {
+    const r = canvas.getBoundingClientRect();
+    let x = (e.clientX - r.left) / r.width * 1000, y = (e.clientY - r.top) / r.height * 1000;
+    x = Math.max(0, Math.min(1000, Math.round(x))); y = Math.max(0, Math.min(1000, Math.round(y)));
+    const p = st.p, n = p.length;
+    if (n >= 2 && Math.abs(p[n - 2] - x) + Math.abs(p[n - 1] - y) < 3) return false;
+    p.push(x, y); return true;
+  };
+  const seg = st => {
+    const g = canvas.getContext('2d'), k = canvas.width / 1000, p = st.p, n = p.length;
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    g.strokeStyle = st.c === 'bg' ? pad.d.bg : st.c; g.fillStyle = g.strokeStyle; g.lineWidth = st.w * k; g.lineCap = 'round'; g.lineJoin = 'round';
+    if (n === 2) { g.beginPath(); g.arc(p[0] * k, p[1] * k, st.w * k / 2, 0, Math.PI * 2); g.fill(); return; }
+    g.beginPath(); g.moveTo(p[n - 4] * k, p[n - 3] * k); g.lineTo(p[n - 2] * k, p[n - 1] * k); g.stroke();
+  };
+  canvas.onpointerdown = e => {
+    if (pad.pointer != null) return;
+    e.preventDefault();
+    try { canvas.setPointerCapture(e.pointerId); } catch (x) {}
+    pad.pointer = e.pointerId;
+    pad.cur = { c: pad.tool === 'eraser' ? 'bg' : pad.color, w: SIZES[pad.sizeI], p: [] };
+    if (pt(e, pad.cur)) seg(pad.cur);
+  };
+  canvas.onpointermove = e => {
+    if (e.pointerId !== pad.pointer || !pad.cur) return;
+    e.preventDefault();
+    const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+    for (const ev of evs.length ? evs : [e]) if (pt(ev, pad.cur)) seg(pad.cur);
+  };
+  const end = e => {
+    if (e.pointerId !== pad.pointer) return;
+    pad.pointer = null;
+    const st = pad.cur; pad.cur = null;
+    if (!st || !st.p.length) return;
+    if (st.p.length === 2) st.p.push(st.p[0], st.p[1]);
+    pad.d.s.push(st); pad.hist.push({ t: 'stroke' });
+    redrawPad();
+  };
+  canvas.onpointerup = end; canvas.onpointercancel = end;
+}
+function sendDrawing(auto) {
+  if (pad.cur && pad.cur.p.length) { if (pad.cur.p.length === 2) pad.cur.p.push(pad.cur.p[0], pad.cur.p[1]); pad.d.s.push(pad.cur); }
+  pad.cur = null; pad.pointer = null;
+  const blank = !pad.d.s.length && pad.d.bg === '#ffffff';
+  if (blank && !auto) { toast('Draw something first.', true); return; }
+  handIn(blank ? { kind: 'draw', by: task.by, d: null, auto: 'asleep' } : { kind: 'draw', by: task.by, d: pad.d, late: auto || undefined });
+}
+addEventListener('resize', () => { if (screen.startsWith('draw:')) { sizePad(); redrawPad(); } });
+
+// ---------- handing in ----------
+function timeUp() {
+  if (!task) return;
+  if (task.kind === 'draw') sendDrawing(true); else sendText(true);
+}
+function handIn(e) {
+  if (!task) return;
+  const t = task; task = null;
+  stopClock();
+  if (e.auto === 'asleep') G.stats[t.by].asleep += 1;
+  // a guess that matches what the artist was trying to draw scores for both of them (paid out in the album)
+  if (t.kind === 'guess' && !e.auto && t.chain.entries.length >= 2) {
+    const drawing = t.chain.entries[t.chain.entries.length - 1], asked = t.chain.entries[t.chain.entries.length - 2];
+    if (drawing.d && close(e.text, asked.text)) e.ok = true;
+  }
+  e.likes = 0;
+  t.chain.entries.push(e);
+  G.turn += 1;
+  if (G.turn >= G.n) { G.turn = 0; G.step += 1; }
+  if (G.step < G.kinds.length) return passScreen();
+  // every chain is done: did the idea make it all the way?
+  for (const chain of G.chains) {
+    const first = chain.entries[0], last = chain.entries[chain.entries.length - 1];
+    chain.survived = last.kind === 'text' && !last.auto ? close(last.text, first.text) : null;
+  }
+  G.album = { ci: 0, ei: -1, stage: 'cover' };
+  header(null);
+  setMain('gather', `<div class="center"><p class="big">✏️ All done!</p><p class="q">Everyone gather round.</p>
+    <p class="sub" style="max-width:34ch">Time to flip through the albums and see where each idea ended up. Tap ❤️ for every page someone loves: +100 to whoever made it.</p>
+    <button class="btn" id="go" type="button" autofocus>Open the albums</button></div>`);
+  $('go').onclick = albumScreen;
+}
+
+// ---------- the album: each chain gets a cover, then its pages, then a verdict ----------
+function payEntry(e, chain, ei) {
+  if (e.paid) return; e.paid = true;
+  if (e.ok) {
+    const drawer = chain.entries[ei - 1];
+    G.stats[e.by].pts += 200; G.stats[e.by].right += 1;
+    if (drawer) { G.stats[drawer.by].pts += 200; G.stats[drawer.by].clear += 1; }
+  }
+}
+function payVerdict(chain) {
+  if (chain.paid) return; chain.paid = true;
+  if (!chain.survived) return;
+  for (const id of new Set(chain.entries.filter(e => !e.auto).map(e => e.by))) { G.stats[id].pts += 150; G.stats[id].kept += 1; }
+}
+function albumNext() {
+  const r = G.album, chain = G.chains[r.ci];
+  if (r.stage === 'cover' || (r.stage === 'entry' && r.ei < chain.entries.length - 1)) { r.stage = 'entry'; r.ei += 1; payEntry(chain.entries[r.ei], chain, r.ei); return albumScreen(); }
+  if (r.stage === 'entry') {
+    payVerdict(chain);
+    if (chain.survived != null) { r.stage = 'verdict'; return albumScreen(); }
+  }
+  if (r.ci + 1 >= G.chains.length) return podium();
+  r.ci += 1; r.ei = -1; r.stage = 'cover';
+  albumScreen();
+}
+function albumScreen() {
+  stopClock(); header(null);
+  const r = G.album, chain = G.chains[r.ci], owner = who(chain.owner);
+  const nextBtn = label => `<div style="flex:1"></div><button class="btn" id="next" type="button" autofocus>${label}</button>`;
+  if (r.stage === 'cover') {
+    setMain(`cover:${r.ci}`, `<div class="center"><p class="cap">Album ${r.ci + 1} of ${G.chains.length}</p>
+      <div style="width:96px;height:96px;border-radius:50%;display:grid;place-items:center;font-size:54px;background:${esc(owner.color)}" aria-hidden="true">${esc(owner.avatar)}</div>
+      <p class="big">${esc(owner.name)}'s chain</p><p class="sub">${chain.entries.length} pages</p></div>${nextBtn('Open it')}`);
+  } else if (r.stage === 'verdict') {
+    const first = chain.entries[0], last = chain.entries[chain.entries.length - 1];
+    setMain(`verdict:${r.ci}`, `<div class="center"><p class="cap">Album ${r.ci + 1} of ${G.chains.length}</p>
+      <p class="verdict ${chain.survived ? 'good' : 'bad'}">${chain.survived ? '🎯 It survived!' : '💥 Total chaos!'}</p>
+      <p class="sub">${chain.survived ? '+150 to everyone who kept it alive' : 'The idea did not make it.'}</p>
+      <div class="compare"><div><span class="cap">Started as</span><b>${esc(first.text)}</b></div><div><span class="cap">Ended as</span><b>${esc(last.text)}</b></div></div></div>
+      ${nextBtn(r.ci + 1 >= G.chains.length ? 'See the scores' : 'Next album')}`);
+  } else {
+    const e = chain.entries[r.ei], by = who(e.by), cap = G.n - 1;
+    const verb = e.kind === 'draw' ? 'drew' : r.ei === 0 ? 'wrote' : 'guessed';
+    const body = e.kind === 'text'
+      ? `<p class="said">${e.auto ? `${e.auto === 'asleep' ? '😴 (fell asleep)' : '🎲 (left it blank)'}<br><span class="sub">The game picked: ${esc(e.text)}</span>` : esc(e.text)}</p>`
+      : e.d ? '<canvas class="art" id="art" aria-label="The drawing"></canvas>' : '<p class="said">😴 (fell asleep)</p>';
+    setMain(`page:${r.ci}:${r.ei}`, `<p class="cap" style="text-align:center">Album ${r.ci + 1} of ${G.chains.length} · page ${r.ei + 1} of ${chain.entries.length}</p>
+      <div class="page"><span class="by">${face(by)}${esc(by.name)} ${verb}</span>${body}
+        ${e.ok ? '<p class="good" style="font-weight:800">🎯 Nailed it! +200 each</p>' : ''}</div>
+      ${e.auto ? '' : `<div class="hearts"><button class="heart" id="heart" type="button" aria-label="Love it: plus 100 for ${esc(by.name)}">❤️ <span id="hn">${e.likes || ''}</span></button>
+        <button class="undo" id="unheart" type="button" ${e.likes ? '' : 'hidden'}>Undo</button></div>
+      <p class="sub" style="text-align:center;font-size:14px" id="hnote">Tap once for each person who loves it (+100 to ${esc(by.name)}). Not your own!</p>`}
+      ${nextBtn(r.ei < chain.entries.length - 1 ? 'Next page' : 'And the verdict…')}`);
+    if (e.d) {
+      const c = $('art'), size = Math.max(180, Math.min($('main').clientWidth, Math.round(innerHeight * 0.5), 480));
+      Doodle.fit(c, size); stopArt = Doodle.replay(c, e.d, replayMs(e.d));
+    }
+    if (!e.auto) {
+      const sync = () => { $('hn').textContent = e.likes || ''; $('heart').disabled = e.likes >= cap; $('unheart').hidden = !e.likes; };
+      const like = d => {
+        e.likes += d;
+        G.stats[e.by].pts += 100 * d;
+        G.stats[e.by][e.kind === 'draw' ? 'likesDraw' : 'likesText'] += d;
+        sync();
+      };
+      $('heart').onclick = () => { if (e.likes < cap) { like(1); const h = $('heart'); h.classList.remove('pop'); void h.offsetWidth; h.classList.add('pop'); } };
+      $('unheart').onclick = () => { if (e.likes > 0) like(-1); };
+      sync();
+    }
+  }
+  $('next').onclick = albumNext;
+}
+
+const AWARDS = [
+  ['likesDraw', '🎨', 'Picasso', n => `${n} like${n === 1 ? '' : 's'} on their drawings`],
+  ['likesText', '😂', 'Comedian', n => `${n} like${n === 1 ? '' : 's'} on their words`],
+  ['right', '🎯', 'Mind Reader', n => `guessed ${n} drawing${n === 1 ? '' : 's'} right`],
+  ['clear', '📡', 'Crystal Clear', n => `${n} drawing${n === 1 ? '' : 's'} guessed right`],
+  ['kept', '🔗', 'Chain Keeper', n => `helped ${n} idea${n === 1 ? '' : 's'} survive`],
+  ['asleep', '😴', 'Sleepyhead', n => `fell asleep ${n} time${n === 1 ? '' : 's'}`],
+];
+function podium() {
+  header(null);
+  for (const chain of G.chains) { chain.entries.forEach((e, i) => payEntry(e, chain, i)); payVerdict(chain); }
+  const ranking = G.stats.map((s, id) => ({ id, pts: s.pts })).sort((a, b) => b.pts - a.pts);
+  let place = 0, last = null;
+  ranking.forEach((r, i) => { if (r.pts !== last) { place = i + 1; last = r.pts; } r.place = place; });
+  const awards = [];
+  for (const [key, icon, title, text] of AWARDS) {
+    let best = null, top = 1;
+    G.stats.forEach((s, id) => { if (s[key] > top || (s[key] === top && best == null)) { best = id; top = s[key]; } });
+    if (best != null) awards.push({ icon, title, id: best, text: text(top) });
+  }
+  const champ = ranking.filter(r => r.place === 1).map(r => who(r.id).name);
+  setMain('podium', `<div class="center" style="flex:none;padding-top:6px"><p class="cap">Final scores</p>
+      <p class="big gold">🏆 ${esc(champ.join(' & '))}</p><p class="sub">${champ.length > 1 ? 'A tie at the top!' : 'wins Doodle Telephone'}</p></div>
+    <div class="podium">${ranking.map(r => { const p = who(r.id); return `<div class="r"><span class="n">${r.place}</span>${face(p)}<span>${esc(p.name)}</span><span class="p">${fmt(r.pts)}</span></div>`; }).join('')}</div>
+    ${awards.map(a => `<div class="award">${a.icon} ${esc(a.title)}: ${esc(who(a.id).name)} <span class="muted">· ${esc(a.text)}</span></div>`).join('')}
+    <div style="flex:1"></div>
+    <button class="btn" id="again" type="button" autofocus>Play again</button>
+    <button class="btn alt" id="menu" type="button">Change players</button>`);
+  $('again').onclick = start;
+  $('menu').onclick = () => setup();
+  $('quit').hidden = true;
+}
+
+// ---------- the turn timer (optional) ----------
+let clock = null;
+function startClock(ms, onEnd) {
+  stopClock();
+  $('tbar').hidden = false;
+  const c = clock = { ms, left: ms, last: performance.now(), raf: 0, dead: false };
+  const loop = now => {
+    if (c.dead) return;
+    if (!document.hidden) c.left -= now - c.last;          // a hidden tab doesn't eat anyone's time
+    c.last = now;
+    const f = Math.max(0, c.left / c.ms);
+    $('tfill').style.transform = `scaleX(${f})`; $('tbar').classList.toggle('low', c.left < 10000);
+    if (c.left <= 0) { c.dead = true; $('tbar').hidden = true; onEnd(); return; }
+    c.raf = requestAnimationFrame(loop);
+  };
+  c.raf = requestAnimationFrame(loop);
+}
+function stopClock() { if (clock) { clock.dead = true; cancelAnimationFrame(clock.raf); clock = null; } $('tbar').hidden = true; }
+
+// quit: tap twice
+let quitArmed = 0;
+$('quit').onclick = () => {
+  const b = $('quit');
+  if (Date.now() - quitArmed > 3000) { quitArmed = Date.now(); b.classList.add('arm'); b.textContent = 'Tap again to quit'; setTimeout(() => { b.classList.remove('arm'); b.textContent = '✕ Quit'; }, 3000); return; }
+  quitArmed = 0; b.classList.remove('arm'); b.textContent = '✕ Quit'; task = null; setup();
+};
+
+setup();
+})();
+</script>
+</body>
+</html>
