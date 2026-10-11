@@ -206,7 +206,13 @@
     heading.append(link);
     const more = el('span', 'project-card-more', project.linkLabel || site.projectsSection.readMoreLabel);
     more.setAttribute('aria-hidden', 'true');
-    body.append(meta, heading, el('p', 'project-card-summary', project.summary), more);
+    body.append(meta, heading);
+    if (isFilled(project.contribution)) {
+      const contribution = el('p', 'project-card-contribution');
+      contribution.append(el('strong', '', site.projectsSection.contributionLabel), el('span', '', project.contribution));
+      body.append(contribution);
+    }
+    body.append(el('p', 'project-card-summary', project.summary), more);
 
     card.append(cover, body);
     return card;

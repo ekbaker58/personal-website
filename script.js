@@ -83,8 +83,8 @@
     const resume = links.find(link => /\.pdf$/.test(link.href));
     const connect = hero.connect || {};
     const actions = el('div', 'hero-actions');
-    [[linkedin, connect.linkedinLabel], [email, connect.emailLabel], [resume, connect.resumeLabel]].forEach(([link, label]) => {
-      if (!link || !isFilled(label)) return;
+    [[hero.primaryAction, hero.primaryAction?.label], [resume, connect.resumeLabel], [email, connect.emailLabel], [linkedin, connect.linkedinLabel]].forEach(([link, label]) => {
+      if (!link || !isSafeHref(link.href) || !isFilled(label)) return;
       const button = el('a', actions.childElementCount ? 'btn btn-outline' : 'btn btn-solid', label);
       button.href = link.href;
       if (isExternal(link.href)) { button.target = '_blank'; button.rel = 'noopener'; }
@@ -93,7 +93,7 @@
     if (actions.childElementCount) copy.append(actions);
 
     const more = el('p', 'hero-more');
-    [hero.primaryAction, hero.secondaryAction].forEach(action => {
+    [hero.secondaryAction, hero.tertiaryAction].forEach(action => {
       if (!action || !isSafeHref(action.href)) return;
       const link = el('a', '', action.label);
       link.href = action.href;
@@ -787,8 +787,8 @@
 
       const mount = document.querySelector('[data-site-content]');
       renderHero(mount, site);
-      renderAbout(mount, site.about);
       renderProjects(mount, site, publishedProjects(content));
+      renderAbout(mount, site.about);
       renderTrack(mount, site.timelineSection, content.timeline);
       renderGames(mount, site.games);
       renderOffTheClock(mount, site.offTheClock);

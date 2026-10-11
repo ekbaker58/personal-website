@@ -789,6 +789,10 @@ details[open] .stop-toggle { background: var(--c); }
 .project-card-link { color: inherit; text-decoration: none; }
 .project-card-link::after { content: ''; position: absolute; inset: 0; z-index: 1; }
 .project-card-summary { font-size: .98rem; }
+.project-card-contribution { display: grid; gap: 3px; padding-block: 8px; border-block: 1px solid var(--line); font-size: .9rem; }
+.project-card-contribution strong { color: var(--c-ink); }
+.project-contribution { margin-top: 16px; max-width: 65ch; }
+.project-demo { margin-top: 20px; }
 .project-card-more { margin-top: 4px; font-weight: 700; color: var(--c-ink); }
 .project-card-more::after { content: ' \2192'; }
 

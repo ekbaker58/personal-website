@@ -19,22 +19,26 @@
         "resumeLabel": "Resume (PDF)"
       },
       "primaryAction": {
+        "label": "View my projects",
+        "href": "#projects"
+      },
+      "secondaryAction": {
         "label": "Drive the timeline",
         "href": "#track"
       },
-      "secondaryAction": {
+      "tertiaryAction": {
         "label": "Play my games",
         "href": "#games"
       }
     },
     "navigation": [
       {
-        "id": "about",
-        "label": "About"
-      },
-      {
         "id": "projects",
         "label": "Projects"
+      },
+      {
+        "id": "about",
+        "label": "About"
       },
       {
         "id": "track",
@@ -66,17 +70,17 @@
         },
         {
           "value": "1 of 20",
-          "label": "U.S. finalists, Alibaba.com CoCreate Pitch 2026, from 39,000+ applicants",
+          "label": "U.S. finalists, Alibaba.com CoCreate Pitch 2026, from 39,000+ applicants (team result)",
           "category": "startup"
         },
         {
           "value": "2nd",
-          "label": "Brand Builder Award, e-Fest 2026",
+          "label": "Brand Builder Award, e-Fest 2026 (team result)",
           "category": "startup"
         },
         {
           "value": "4–1",
-          "label": "Combat robot record, National Robotics Challenge 2025",
+          "label": "Combat robot record, National Robotics Challenge 2025 (team result)",
           "category": "engineering"
         }
       ]
@@ -136,7 +140,9 @@
       "photosTitle": "Photos",
       "moreTitle": "More projects",
       "openPhotoLabel": "Open full size",
-      "notFound": "That project page doesn't exist (yet)."
+      "notFound": "That project page doesn't exist (yet).",
+      "contributionLabel": "My contribution",
+      "demoLabel": "Play the games"
     },
     "timelineSection": {
       "heading": "Timeline",
@@ -465,7 +471,8 @@
           "caption": "The team with the F26 car."
         }
       ],
-      "publish": true
+      "publish": true,
+      "contribution": "F27 steering design · F26 fabrication and assembly"
     },
     {
       "id": "flower-cart",
@@ -566,13 +573,13 @@
           "src": "images/projects/flower-cart/rebuilt-top.jpg",
           "alt": "The cart in a garage with its rebuilt top: two round white posts holding a white header over the black counter, four black flower buckets tied with white bows, and a round floral sign on the front panel.",
           "caption": "After I rebuilt the top: white posts and a white header.",
-      "fit": "contain"
+          "fit": "contain"
         },
         {
           "src": "images/projects/flower-cart/finished.jpg",
           "alt": "The finished flower cart in a driveway: a white wooden cabinet on a steel base, a wagon wheel on the side, gold posts and a pink and white striped canopy.",
           "caption": "The cart as I first finished it in May 2025, with gold posts and a striped canopy.",
-      "position": "50% 20%"
+          "position": "50% 20%"
         },
         {
           "src": "images/projects/flower-cart/grinder.jpg",
@@ -625,7 +632,8 @@
           "caption": "Taken apart and packed for the trip."
         }
       ],
-      "publish": true
+      "publish": true,
+      "contribution": "Sketched the plan · completed most of the build"
     },
     {
       "id": "syp",
@@ -653,15 +661,15 @@
       "results": [
         {
           "value": "2nd",
-          "label": "Brand Builder Award, e-Fest 2026, as one of 25 finalist teams from nearly 170 ventures"
+          "label": "Brand Builder Award, e-Fest 2026, as one of 25 finalist teams from nearly 170 ventures (team result)"
         },
         {
           "value": "1 of 20",
-          "label": "U.S. finalists, Alibaba.com CoCreate Pitch 2026, from 39,000+ applicants"
+          "label": "U.S. finalists, Alibaba.com CoCreate Pitch 2026, from 39,000+ applicants (team result)"
         },
         {
           "value": "$10,000",
-          "label": "CoCreate finalist award"
+          "label": "CoCreate finalist award (team result)"
         }
       ],
       "sections": [
@@ -703,7 +711,8 @@
           "position": "50% 18%"
         }
       ],
-      "publish": true
+      "publish": true,
+      "contribution": "Team-integration concept · design drawings · pitching"
     },
     {
       "id": "nrc-spinner",
@@ -735,11 +744,11 @@
       "results": [
         {
           "value": "4–1",
-          "label": "Match record"
+          "label": "Match record (team result)"
         },
         {
           "value": "8th",
-          "label": "Overall"
+          "label": "Overall (team result)"
         }
       ],
       "sections": [
@@ -777,7 +786,8 @@
           "caption": "The robot in action on a test drive, April 2025 (no sound)."
         }
       ],
-      "publish": true
+      "publish": true,
+      "contribution": "Shared design, build and repairs equally with one partner"
     },
     {
       "id": "game-night",
@@ -787,10 +797,63 @@
       "category": "engineering",
       "status": "done",
       "summary": "A laptop runs the games, a TV shows the big screen, and friends play on their phones. All five have a version you can play right here.",
-      "href": "#games",
-      "linkLabel": "Play them",
       "photos": [],
-      "publish": true
+      "publish": true,
+      "contribution": "Built five games and their shared game-night hub",
+      "demoHref": "#games",
+      "description": "Five party games connected by a shared hub: a laptop hosts, a TV shows the action, and phones become controllers. Play the browser versions.",
+      "facts": [
+        {
+          "label": "Setup",
+          "value": "Laptop host, TV display, phone controllers"
+        },
+        {
+          "label": "Joining",
+          "value": "QR code on the same Wi-Fi; nothing to install on phones"
+        },
+        {
+          "label": "Shared features",
+          "value": "Player profiles, coin wallet and leaderboard"
+        },
+        {
+          "label": "Browser demos",
+          "value": "Solo, against the computer, or pass-and-play"
+        }
+      ],
+      "sections": [
+        {
+          "heading": "One room, three screens",
+          "paragraphs": [
+            "I built five party games for game night. A laptop runs the games, a TV shows the action, and friends use their phones as controllers. Players join by scanning a QR code on the same Wi-Fi."
+          ]
+        },
+        {
+          "heading": "A hub for the whole night",
+          "paragraphs": [
+            "Game Night Hub starts all the games with one command and connects them with a shared player profile and coin wallet. A leaderboard tracks the whole night."
+          ],
+          "bullets": [
+            "Flappy Flock: shared flight leaderboards and races",
+            "Plinko 32: risk levels, auto-drop strategies and trophies",
+            "Brain Brawl: trivia, fake answers, a speed round and a final wager",
+            "Doodle Telephone: writing, drawing and guessing, replayed stroke by stroke",
+            "Game Night Hub: Texas Hold’em with a TV poker table"
+          ]
+        },
+        {
+          "heading": "Checking scores and full games",
+          "paragraphs": [
+            "In Flappy Flock, the server replays flights from the recorded taps to verify scores. Bot tests play full games at high speed to check for crashes, stalls and answer leaks."
+          ]
+        },
+        {
+          "heading": "Try the browser versions",
+          "paragraphs": [
+            "All five games have versions you can play on this site. Flappy Flock and Plinko 32 are solo games; Brain Brawl runs against the clock; Texas Hold’em lets you play against 1 to 5 computer players. Doodle Telephone is pass-and-play for 3 to 8 people sharing one device.",
+            "These browser versions are separate from the laptop-hosted game-night setup. Plinko uses play money and Hold’em uses play chips."
+          ]
+        }
+      ]
     }
   ],
   "timeline": [
@@ -1129,7 +1192,7 @@
         "Game Night Hub, Flappy Flock, Brain Brawl, Doodle Telephone and Plinko 32",
         "Bot tests play full games at high speed to check for crashes, stalls and answer leaks"
       ],
-      "link": "#games",
+      "link": "projects/game-night/",
       "publish": true
     },
     {

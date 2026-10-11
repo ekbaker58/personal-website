@@ -9,7 +9,7 @@
 
   const {
     el, isFilled, categoryClass, resolveHref, renderMedia, setupTheme, setupEmailCopy, renderNavigation, publishedProjects,
-    projectHref, usablePhotos, statusLabel, renderProjectCard, renderContactPanel, renderFooter,
+    projectHref, usablePhotos, statusLabel, renderProjectCard, renderContactPanel, renderFooter, isSafeHref,
     renderLoadError, loadContent
   } = window.EB;
 
@@ -39,6 +39,16 @@
     if (isFilled(project.dateLabel)) meta.append(el('span', 'project-date', project.dateLabel));
     inner.append(meta);
     inner.append(el('p', 'project-summary', project.summary));
+    if (isFilled(project.contribution)) {
+      const contribution = el('p', 'project-contribution');
+      contribution.append(el('strong', '', cfg.contributionLabel + ': '), project.contribution);
+      inner.append(contribution);
+    }
+    if (isSafeHref(project.demoHref)) {
+      const demo = el('a', 'btn btn-solid project-demo', cfg.demoLabel);
+      demo.href = resolveHref(project.demoHref, ROOT);
+      inner.append(demo);
+    }
 
     header.append(inner);
     mount.append(header);
