@@ -171,7 +171,17 @@
 
     const cover = el('div', 'project-card-cover');
     const photo = usablePhotos(project)[0];
-    if (photo) {
+    if (project.cardMosaic === true && usablePhotos(project).length >= 3) {
+      cover.classList.add('is-mosaic');
+      usablePhotos(project).slice(0, 3).forEach(photo => {
+        const img = el('img');
+        img.src = resolveHref(photo.src, root);
+        img.alt = '';
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        cover.append(img);
+      });
+    } else if (photo) {
       const img = el('img');
       img.src = resolveHref(photo.src, root);
       img.alt = '';

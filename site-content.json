@@ -65,23 +65,13 @@
         },
         {
           "value": "19th of 111",
-          "label": "Bulls Racing at FSAE Michigan 2026 (team result)",
+          "label": "FSAE Michigan 2026 · Bulls Racing team result",
           "category": "engineering"
         },
         {
           "value": "1 of 20",
-          "label": "U.S. finalists, Alibaba.com CoCreate Pitch 2026, from 39,000+ applicants (team result)",
+          "label": "U.S. finalist teams · CoCreate Pitch 2026",
           "category": "startup"
-        },
-        {
-          "value": "2nd",
-          "label": "Brand Builder Award, e-Fest 2026 (team result)",
-          "category": "startup"
-        },
-        {
-          "value": "4–1",
-          "label": "Combat robot record, National Robotics Challenge 2025 (team result)",
-          "category": "engineering"
         }
       ]
     },
@@ -89,11 +79,9 @@
       "heading": "About",
       "title": "I like building things that have to work in front of people.",
       "paragraphs": [
-        "I'm Ethan, an Industrial Engineering student at the University of South Florida (Class of 2029). I'm from Columbus, Ohio, and I'm in Tampa for school.",
-        "I started with robots. In high school I led a three-person team to first place in a robotics competition, and in 2025 a partner and I built a 3-lb combat robot with zero budget, fixed it between matches, and went 4–1 at the National Robotics Challenge.",
-        "At USF, I joined Bulls Racing, our Formula SAE team. My first season was fabrication: carbon-fiber pedal faces and a lot of time inside the pedal box. This season I'm designing the steering system for the F27 car, with one goal: make it take less effort to turn the wheel than it did on F26.",
-        "I'm also the engineering consultant for syp, a student startup that measures how much athletes actually drink. I came up with how syp tracks a whole team at once, and I pitched it on stage at e-Fest, where we took second place for the Brand Builder Award.",
-        "Long-term, I want to lead engineering projects, ideally at a sports or hypercar manufacturer someday. For now I'm focused on learning how products are designed, built and improved, in whatever industry I'm working in."
+        "I'm Ethan, an Industrial Engineering student at the University of South Florida (Class of 2029), originally from Columbus, Ohio. I'm in Tampa for school.",
+        "My work spans Formula SAE steering, startup hardware and party games. I started with robotics and now spend my time learning how products are designed, built and improved.",
+        "Long-term, I want to lead engineering projects, ideally at a sports or hypercar manufacturer. For Summer 2027, I'm looking for an internship in industrial engineering, manufacturing or automation."
       ],
       "skillsHeading": "What I work with",
       "skills": [
@@ -103,7 +91,11 @@
             "AutoCAD (2D and 3D drafting, floor plans)",
             "Fusion 360",
             "Engineering drawings"
-          ]
+          ],
+          "example": {
+            "label": "Design drawings for syp",
+            "href": "projects/syp/"
+          }
         },
         {
           "group": "Fabrication",
@@ -111,14 +103,22 @@
             "Carbon-fiber parts",
             "Vehicle assembly",
             "Automotive 12V wiring"
-          ]
+          ],
+          "example": {
+            "label": "Pedal fabrication with Bulls Racing",
+            "href": "projects/bulls-racing/"
+          }
         },
         {
           "group": "Business",
           "items": [
             "Pitching to judges",
             "Corporate outreach"
-          ]
+          ],
+          "example": {
+            "label": "Pitching with syp",
+            "href": "projects/syp/"
+          }
         },
         {
           "group": "Languages",
@@ -472,7 +472,163 @@
         }
       ],
       "publish": true,
-      "contribution": "F27 steering design · F26 fabrication and assembly"
+      "contribution": "F27 steering design · F26 fabrication and assembly",
+      "featured": true
+    },
+    {
+      "id": "syp",
+      "title": "syp",
+      "eyebrow": "Student hydration-tech startup · Engineering Consultant",
+      "dateLabel": "Spring 2026 to now",
+      "category": "startup",
+      "status": "in-progress",
+      "summary": "syp measures how much athletes actually drink. I'm its engineering consultant: I came up with how it tracks a whole team at once, and I help pitch it.",
+      "description": "Ethan Baker's work as engineering consultant for syp, a student hydration-tech startup: its team tracking system and its pitch competitions.",
+      "facts": [
+        {
+          "label": "Company",
+          "value": "syp, a student hydration-tech startup"
+        },
+        {
+          "label": "My role",
+          "value": "Engineering Consultant"
+        },
+        {
+          "label": "Where",
+          "value": "Tampa, FL"
+        }
+      ],
+      "results": [
+        {
+          "value": "2nd",
+          "label": "Brand Builder Award, e-Fest 2026, as one of 25 finalist teams from nearly 170 ventures (team result)"
+        },
+        {
+          "value": "1 of 20",
+          "label": "U.S. finalists, Alibaba.com CoCreate Pitch 2026, from 39,000+ applicants (team result)"
+        },
+        {
+          "value": "$10,000",
+          "label": "CoCreate finalist award (team result)"
+        }
+      ],
+      "sections": [
+        {
+          "heading": "Tracking a whole team",
+          "paragraphs": [
+            "I came up with syp's team-integration system: RFID wristbands on the players and an antenna in the bottle. Each drink is matched to the athlete who took it and shows up live on the coach's dashboard."
+          ]
+        },
+        {
+          "heading": "Design drawings",
+          "paragraphs": [
+            "I drafted the design drawings for syp's multi-size variant. A teammate built the CAD model from them."
+          ]
+        },
+        {
+          "heading": "Pitching",
+          "paragraphs": [
+            "I'm one of two people who present syp's business plan."
+          ],
+          "bullets": [
+            "e-Fest 2026, Minneapolis: I pitched on stage to the judges, and syp took 2nd place for the Brand Builder Award.",
+            "Alibaba.com CoCreate Pitch 2026: I worked on our application. syp was one of 20 U.S. finalists and received the $10,000 finalist award. The team pitched the final in Los Angeles.",
+            "USF Business Plan Championship, October 2, 2026: I pitched syp's business plan with a teammate."
+          ]
+        }
+      ],
+      "photos": [
+        {
+          "src": "images/projects/syp/efest-award-sign.jpg",
+          "alt": "Me holding a syp, University of South Florida sign in front of the e-Fest backdrop.",
+          "caption": "Me at e-Fest 2026 with syp's sign.",
+          "position": "50% 45%"
+        },
+        {
+          "src": "images/projects/syp/efest-award-stage.jpg",
+          "alt": "The syp team on stage at e-Fest 2026 under a slide reading Brand Builder Award, 2026 Second Place, syp, University of South Florida.",
+          "caption": "On stage at e-Fest 2026 after winning second place for the Brand Builder Award.",
+          "position": "50% 18%"
+        }
+      ],
+      "publish": true,
+      "contribution": "Team-integration concept · design drawings · pitching"
+    },
+    {
+      "id": "nrc-spinner",
+      "title": "Beetleweight combat robot",
+      "eyebrow": "National Robotics Challenge 2025 · Marion, OH",
+      "dateLabel": "April 2025",
+      "category": "engineering",
+      "status": "done",
+      "summary": "A partner and I built a 3-lb beetleweight combat robot with a horizontal spinner, with no budget. We repaired it between matches, went 4–1 and placed 8th overall.",
+      "description": "Ethan Baker's 3-lb beetleweight combat robot: a horizontal spinner built with no budget that went 4–1 and placed 8th at the National Robotics Challenge 2025.",
+      "facts": [
+        {
+          "label": "Event",
+          "value": "National Robotics Challenge, Marion, OH"
+        },
+        {
+          "label": "Weight class",
+          "value": "3-lb beetleweight"
+        },
+        {
+          "label": "Weapon",
+          "value": "Horizontal spinner"
+        },
+        {
+          "label": "Team",
+          "value": "Me and one partner, 50/50 on design, build and repairs"
+        }
+      ],
+      "results": [
+        {
+          "value": "4–1",
+          "label": "Match record (team result)"
+        },
+        {
+          "value": "8th",
+          "label": "Overall (team result)"
+        }
+      ],
+      "sections": [
+        {
+          "heading": "The build",
+          "bullets": [
+            "Hard-plastic chassis with the internals housed inside",
+            "Built with no budget",
+            "Designed, built and repaired 50/50 with my partner"
+          ]
+        },
+        {
+          "heading": "At the event",
+          "paragraphs": [
+            "We repaired battle damage between matches and finished 4–1, 8th overall."
+          ]
+        }
+      ],
+      "photos": [
+        {
+          "src": "images/projects/nrc-spinner/electronics.jpg",
+          "alt": "Hands wiring the robot's electronics on its black perforated chassis, with the pink and yellow spinner mounted at the front.",
+          "caption": "Wiring the electronics, with the spinner mounted.",
+          "position": "50% 65%"
+        },
+        {
+          "src": "images/projects/nrc-spinner/spinner.jpg",
+          "alt": "A hand holding the robot's pink, yellow and blue spinner, a bar shape with cut-outs, over a workbench.",
+          "caption": "The spinner.",
+          "position": "50% 50%"
+        },
+        {
+          "src": "images/projects/nrc-spinner/test-drive-poster.jpg",
+          "video": "images/projects/nrc-spinner/test-drive.mp4",
+          "alt": "Video: the robot driving across a carpeted floor in a hallway.",
+          "caption": "The robot in action on a test drive, April 2025 (no sound)."
+        }
+      ],
+      "publish": true,
+      "contribution": "Shared design, build and repairs equally with one partner"
     },
     {
       "id": "flower-cart",
@@ -636,160 +792,6 @@
       "contribution": "Sketched the plan · completed most of the build"
     },
     {
-      "id": "syp",
-      "title": "syp",
-      "eyebrow": "Student hydration-tech startup · Engineering Consultant",
-      "dateLabel": "Spring 2026 to now",
-      "category": "startup",
-      "status": "in-progress",
-      "summary": "syp measures how much athletes actually drink. I'm its engineering consultant: I came up with how it tracks a whole team at once, and I help pitch it.",
-      "description": "Ethan Baker's work as engineering consultant for syp, a student hydration-tech startup: its team tracking system and its pitch competitions.",
-      "facts": [
-        {
-          "label": "Company",
-          "value": "syp, a student hydration-tech startup"
-        },
-        {
-          "label": "My role",
-          "value": "Engineering Consultant"
-        },
-        {
-          "label": "Where",
-          "value": "Tampa, FL"
-        }
-      ],
-      "results": [
-        {
-          "value": "2nd",
-          "label": "Brand Builder Award, e-Fest 2026, as one of 25 finalist teams from nearly 170 ventures (team result)"
-        },
-        {
-          "value": "1 of 20",
-          "label": "U.S. finalists, Alibaba.com CoCreate Pitch 2026, from 39,000+ applicants (team result)"
-        },
-        {
-          "value": "$10,000",
-          "label": "CoCreate finalist award (team result)"
-        }
-      ],
-      "sections": [
-        {
-          "heading": "Tracking a whole team",
-          "paragraphs": [
-            "I came up with syp's team-integration system: RFID wristbands on the players and an antenna in the bottle. Each drink is matched to the athlete who took it and shows up live on the coach's dashboard."
-          ]
-        },
-        {
-          "heading": "Design drawings",
-          "paragraphs": [
-            "I drafted the design drawings for syp's multi-size variant. A teammate built the CAD model from them."
-          ]
-        },
-        {
-          "heading": "Pitching",
-          "paragraphs": [
-            "I'm one of two people who present syp's business plan."
-          ],
-          "bullets": [
-            "e-Fest 2026, Minneapolis: I pitched on stage to the judges, and syp took 2nd place for the Brand Builder Award.",
-            "Alibaba.com CoCreate Pitch 2026: I worked on our application. syp was one of 20 U.S. finalists and received the $10,000 finalist award. The team pitched the final in Los Angeles.",
-            "USF Business Plan Championship, October 2, 2026: I pitched syp's business plan with a teammate."
-          ]
-        }
-      ],
-      "photos": [
-        {
-          "src": "images/projects/syp/efest-award-sign.jpg",
-          "alt": "Me holding a syp, University of South Florida sign in front of the e-Fest backdrop.",
-          "caption": "Me at e-Fest 2026 with syp's sign.",
-          "position": "50% 45%"
-        },
-        {
-          "src": "images/projects/syp/efest-award-stage.jpg",
-          "alt": "The syp team on stage at e-Fest 2026 under a slide reading Brand Builder Award, 2026 Second Place, syp, University of South Florida.",
-          "caption": "On stage at e-Fest 2026 after winning second place for the Brand Builder Award.",
-          "position": "50% 18%"
-        }
-      ],
-      "publish": true,
-      "contribution": "Team-integration concept · design drawings · pitching"
-    },
-    {
-      "id": "nrc-spinner",
-      "title": "Beetleweight combat robot",
-      "eyebrow": "National Robotics Challenge 2025 · Marion, OH",
-      "dateLabel": "April 2025",
-      "category": "engineering",
-      "status": "done",
-      "summary": "A partner and I built a 3-lb beetleweight combat robot with a horizontal spinner, with no budget. We repaired it between matches, went 4–1 and placed 8th overall.",
-      "description": "Ethan Baker's 3-lb beetleweight combat robot: a horizontal spinner built with no budget that went 4–1 and placed 8th at the National Robotics Challenge 2025.",
-      "facts": [
-        {
-          "label": "Event",
-          "value": "National Robotics Challenge, Marion, OH"
-        },
-        {
-          "label": "Weight class",
-          "value": "3-lb beetleweight"
-        },
-        {
-          "label": "Weapon",
-          "value": "Horizontal spinner"
-        },
-        {
-          "label": "Team",
-          "value": "Me and one partner, 50/50 on design, build and repairs"
-        }
-      ],
-      "results": [
-        {
-          "value": "4–1",
-          "label": "Match record (team result)"
-        },
-        {
-          "value": "8th",
-          "label": "Overall (team result)"
-        }
-      ],
-      "sections": [
-        {
-          "heading": "The build",
-          "bullets": [
-            "Hard-plastic chassis with the internals housed inside",
-            "Built with no budget",
-            "Designed, built and repaired 50/50 with my partner"
-          ]
-        },
-        {
-          "heading": "At the event",
-          "paragraphs": [
-            "We repaired battle damage between matches and finished 4–1, 8th overall."
-          ]
-        }
-      ],
-      "photos": [
-        {
-          "src": "images/projects/nrc-spinner/spinner.jpg",
-          "alt": "A hand holding the robot's pink, yellow and blue spinner, a bar shape with cut-outs, over a workbench.",
-          "caption": "The spinner.",
-          "position": "50% 50%"
-        },
-        {
-          "src": "images/projects/nrc-spinner/electronics.jpg",
-          "alt": "Hands wiring the robot's electronics on its black perforated chassis, with the pink and yellow spinner mounted at the front.",
-          "caption": "Wiring the electronics, with the spinner mounted."
-        },
-        {
-          "src": "images/projects/nrc-spinner/test-drive-poster.jpg",
-          "video": "images/projects/nrc-spinner/test-drive.mp4",
-          "alt": "Video: the robot driving across a carpeted floor in a hallway.",
-          "caption": "The robot in action on a test drive, April 2025 (no sound)."
-        }
-      ],
-      "publish": true,
-      "contribution": "Shared design, build and repairs equally with one partner"
-    },
-    {
       "id": "game-night",
       "title": "Five party games",
       "eyebrow": "Game night",
@@ -797,7 +799,26 @@
       "category": "engineering",
       "status": "done",
       "summary": "A laptop runs the games, a TV shows the big screen, and friends play on their phones. All five have a version you can play right here.",
-      "photos": [],
+      "photos": [
+        {
+          "src": "images/projects/game-night/brain-brawl.jpg",
+          "alt": "Brain Brawl solo setup screen with game length, timer settings and a Start button.",
+          "caption": "Brain Brawl: solo trivia setup.",
+          "fit": "contain"
+        },
+        {
+          "src": "images/projects/game-night/plinko-32.jpg",
+          "alt": "Plinko 32 browser demo showing its peg board, risk controls and play-money balance.",
+          "caption": "Plinko 32: the board and play-money controls.",
+          "fit": "contain"
+        },
+        {
+          "src": "images/projects/game-night/doodle-telephone.jpg",
+          "alt": "Doodle Telephone pass-and-play setup with three empty player-name fields and round settings.",
+          "caption": "Doodle Telephone: pass-and-play setup.",
+          "fit": "contain"
+        }
+      ],
       "publish": true,
       "contribution": "Built five games and their shared game-night hub",
       "demoHref": "#games",
@@ -853,7 +874,8 @@
             "These browser versions are separate from the laptop-hosted game-night setup. Plinko uses play money and Hold’em uses play chips."
           ]
         }
-      ]
+      ],
+      "cardMosaic": true
     }
   ],
   "timeline": [

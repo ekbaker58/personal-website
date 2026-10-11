@@ -11,6 +11,9 @@ Generated project shells should not be edited by hand.
 Project entries can include `contribution`, shown on cards and the project page. The shared
 label lives in `site.projectsSection.contributionLabel`. A `demoHref` links a case study
 back to its demos; its button label lives in `site.projectsSection.demoLabel`.
+`featured: true` gives a project a full-width card on desktop home pages. `cardMosaic: true`
+uses its first three photos as a card collage. Skill groups can include an `example`
+with a label and internal project href to connect the skill list to demonstrated work.
 
 ## Browser checks
 

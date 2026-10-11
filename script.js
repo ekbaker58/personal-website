@@ -144,6 +144,11 @@
       const ul = el('ul');
       items.forEach(item => ul.append(el('li', '', item)));
       dd.append(ul);
+      if (group.example && isFilled(group.example.label) && isSafeHref(group.example.href)) {
+        const example = el('a', 'skill-example', group.example.label);
+        example.href = group.example.href;
+        dd.append(example);
+      }
       row.append(dd);
       groups.append(row);
     });
@@ -161,7 +166,11 @@
     const { section, inner } = sectionShell('projects', cfg.title, 'projects');
     if (isFilled(cfg.intro)) inner.append(el('p', 'section-intro', cfg.intro));
     const grid = el('div', 'project-grid');
-    projects.forEach(project => grid.append(renderProjectCard(project, site, '')));
+    projects.forEach(project => {
+      const card = renderProjectCard(project, site, '');
+      if (project.featured === true) card.classList.add('project-card-featured');
+      grid.append(card);
+    });
     inner.append(grid);
     mount.append(section);
   }
