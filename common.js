@@ -171,7 +171,17 @@
 
     const cover = el('div', 'project-card-cover');
     const photo = usablePhotos(project)[0];
-    if (photo) {
+    if (project.cardMosaic === true && usablePhotos(project).length >= 3) {
+      cover.classList.add('is-mosaic');
+      usablePhotos(project).slice(0, 3).forEach(photo => {
+        const img = el('img');
+        img.src = resolveHref(photo.src, root);
+        img.alt = '';
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        cover.append(img);
+      });
+    } else if (photo) {
       const img = el('img');
       img.src = resolveHref(photo.src, root);
       img.alt = '';
@@ -206,7 +216,13 @@
     heading.append(link);
     const more = el('span', 'project-card-more', project.linkLabel || site.projectsSection.readMoreLabel);
     more.setAttribute('aria-hidden', 'true');
-    body.append(meta, heading, el('p', 'project-card-summary', project.summary), more);
+    body.append(meta, heading);
+    if (isFilled(project.contribution)) {
+      const contribution = el('p', 'project-card-contribution');
+      contribution.append(el('strong', '', site.projectsSection.contributionLabel), el('span', '', project.contribution));
+      body.append(contribution);
+    }
+    body.append(el('p', 'project-card-summary', project.summary), more);
 
     card.append(cover, body);
     return card;

@@ -1,5 +1,7 @@
 .DS_Store
 node_modules/
+test-results/
+playwright-report/
 _old-version-*/
 ethan-site-brief.md
 NOTES.md

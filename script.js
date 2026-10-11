@@ -83,8 +83,8 @@
     const resume = links.find(link => /\.pdf$/.test(link.href));
     const connect = hero.connect || {};
     const actions = el('div', 'hero-actions');
-    [[linkedin, connect.linkedinLabel], [email, connect.emailLabel], [resume, connect.resumeLabel]].forEach(([link, label]) => {
-      if (!link || !isFilled(label)) return;
+    [[hero.primaryAction, hero.primaryAction?.label], [resume, connect.resumeLabel], [email, connect.emailLabel], [linkedin, connect.linkedinLabel]].forEach(([link, label]) => {
+      if (!link || !isSafeHref(link.href) || !isFilled(label)) return;
       const button = el('a', actions.childElementCount ? 'btn btn-outline' : 'btn btn-solid', label);
       button.href = link.href;
       if (isExternal(link.href)) { button.target = '_blank'; button.rel = 'noopener'; }
@@ -93,7 +93,7 @@
     if (actions.childElementCount) copy.append(actions);
 
     const more = el('p', 'hero-more');
-    [hero.primaryAction, hero.secondaryAction].forEach(action => {
+    [hero.secondaryAction, hero.tertiaryAction].forEach(action => {
       if (!action || !isSafeHref(action.href)) return;
       const link = el('a', '', action.label);
       link.href = action.href;
@@ -144,6 +144,11 @@
       const ul = el('ul');
       items.forEach(item => ul.append(el('li', '', item)));
       dd.append(ul);
+      if (group.example && isFilled(group.example.label) && isSafeHref(group.example.href)) {
+        const example = el('a', 'skill-example', group.example.label);
+        example.href = group.example.href;
+        dd.append(example);
+      }
       row.append(dd);
       groups.append(row);
     });
@@ -161,7 +166,11 @@
     const { section, inner } = sectionShell('projects', cfg.title, 'projects');
     if (isFilled(cfg.intro)) inner.append(el('p', 'section-intro', cfg.intro));
     const grid = el('div', 'project-grid');
-    projects.forEach(project => grid.append(renderProjectCard(project, site, '')));
+    projects.forEach(project => {
+      const card = renderProjectCard(project, site, '');
+      if (project.featured === true) card.classList.add('project-card-featured');
+      grid.append(card);
+    });
     inner.append(grid);
     mount.append(section);
   }
@@ -787,8 +796,8 @@
 
       const mount = document.querySelector('[data-site-content]');
       renderHero(mount, site);
-      renderAbout(mount, site.about);
       renderProjects(mount, site, publishedProjects(content));
+      renderAbout(mount, site.about);
       renderTrack(mount, site.timelineSection, content.timeline);
       renderGames(mount, site.games);
       renderOffTheClock(mount, site.offTheClock);
