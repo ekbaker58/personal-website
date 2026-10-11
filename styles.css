@@ -234,11 +234,11 @@ button { font: inherit; color: inherit; }
 .shape-ring { width: clamp(90px, 10vw, 140px); aspect-ratio: 1; right: 22%; top: 5%; border-radius: 50%; border: 12px solid var(--pink); opacity: .9; }
 .shape-tri { width: 90px; height: 80px; left: 45%; top: 9%; background: var(--green); clip-path: polygon(50% 0, 100% 100%, 0 100%); transform: rotate(14deg); }
 .shape-dots { width: 180px; height: 120px; left: -20px; top: 40px; background-image: radial-gradient(var(--line) 2.4px, transparent 2.6px); background-size: 18px 18px; }
-.livery { position: absolute; left: -10%; right: -10%; bottom: 18px; height: 120px; transform: rotate(-6deg); transform-origin: left bottom; }
+.livery { position: absolute; left: -10%; right: -10%; bottom: 14px; height: 56px; transform: rotate(-1.5deg); transform-origin: left bottom; }
 .band { position: absolute; left: 0; right: 0; height: 30px; border-radius: 30px; }
-.band-1 { bottom: 70px; background: var(--orange); }
-.band-2 { bottom: 38px; left: 14%; background: var(--blue); }
-.band-3 { bottom: 10px; left: 28%; background: var(--violet); height: 22px; }
+.band-1 { bottom: 36px; height: 16px; background: var(--orange); }
+.band-2 { bottom: 18px; height: 14px; left: 14%; background: var(--blue); }
+.band-3 { bottom: 0; left: 28%; background: var(--violet); height: 12px; }
 
 .hero-inner { display: grid; gap: 28px; align-items: center; padding-bottom: 96px; }
 .hero-location { color: var(--muted); font-weight: 600; margin-bottom: 8px; }
