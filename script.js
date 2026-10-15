@@ -170,9 +170,11 @@
     stop.dataset.dateLabel = item.dateLabel;
     stop.dataset.title = item.title;
 
-    const date = el('p', 'stop-date', item.dateLabel);
+    // Each stop is one compact row (date, title, open button); the category tag and everything else
+    // sit inside the row's details, so the whole timeline takes far less scrolling.
+    const date = el('span', 'stop-date', item.dateLabel);
     const categoryLabel = labels.filters.find(filter => filter.id === item.category)?.label || item.category;
-    const statusText = el('span', 'sr-only', `, ${labels.statusLabels[item.status] || item.status}`);
+    const statusText = el('span', 'sr-only', `, ${categoryLabel}, ${labels.statusLabels[item.status] || item.status}`);
 
     const detail = el('div', 'stop-detail');
     const meta = [item.org, item.location].filter(isFilled);
@@ -207,9 +209,12 @@
       detail.append(link);
     }
 
-    const head = [el('span', 'stop-tag', categoryLabel), el('span', 'stop-title', item.title), statusText];
+    const head = [date, el('span', 'stop-title', item.title), statusText];
     let body;
     if (detail.childElementCount) {
+      const tag = el('span', 'stop-tag', categoryLabel);
+      tag.setAttribute('aria-hidden', 'true');          // already read out in the row
+      detail.prepend(tag);
       body = el('details', 'stop-body');
       const summary = el('summary', 'stop-summary-row');
       summary.append(...head, el('span', 'stop-toggle'));
@@ -221,7 +226,7 @@
       row.append(...head);
       body.append(row);
     }
-    stop.append(date, body);
+    stop.append(body);
     return stop;
   }
 
@@ -445,7 +450,9 @@
       checkpoints.replaceChildren();
       marks = [];
       list.querySelectorAll('.stop:not([hidden])').forEach(stop => {
-        const y = stop.getBoundingClientRect().top - trackTop + 30;
+        // the checkpoint lines up with the stop's row, even when its details are open
+        const row = stop.querySelector('.stop-summary-row').getBoundingClientRect();
+        const y = row.top - trackTop + row.height / 2;
         const p = pointAt(y);
         const group = svg('g', { class: `checkpoint ${categoryClass(stop.dataset.category)} status-${stop.className.match(/status-([\w-]+)/)?.[1] || 'done'}` });
         group.append(
@@ -557,57 +564,31 @@
   }
 
   // ---------- games ----------
+  // A small row of tiles: icon, name, one line on what you play here. A tile opens the game in the page player.
   function renderGames(mount, games) {
     const { section, inner } = sectionShell('games', games.title, 'games');
-    inner.append(el('p', 'section-intro', games.intro));
-
-    const steps = el('ol', 'steps');
-    games.steps.forEach((step, index) => {
-      const li = el('li', 'step');
-      li.append(el('span', 'step-number', String(index + 1)), el('strong', 'step-title', step.title), el('span', 'step-text', step.text));
-      li.firstChild.setAttribute('aria-hidden', 'true');
-      steps.append(li);
-    });
-    inner.append(steps);
-
-    const grid = el('div', 'game-grid');
-    // the first two games get the big cards; the rest sit three to a row
-    games.items.filter(game => game.publish).forEach((game, index) => {
-      const playable = isSafeHref(game.playUrl);
-      const featured = index < 2;
-      const card = el('article', `game ${categoryClass(game.category)} ${playable ? 'game-playable' : 'game-party'} ${featured ? 'game-feature' : 'game-compact'}`);
-      card.setAttribute('aria-labelledby', `game-${game.id}`);
-      const icon = el('img', 'game-icon');
+    if (isFilled(games.intro)) inner.append(el('p', 'section-intro', games.intro));
+    const row = el('ul', 'games-row');
+    games.items.filter(game => game.publish && isSafeHref(game.playUrl)).forEach(game => {
+      const name = game.playName || game.name;
+      const li = el('li');
+      const tile = el('button', `game-tile ${categoryClass(game.category)}`);
+      tile.type = 'button';
+      tile.setAttribute('aria-label', `${games.playLabel} ${name}${isFilled(game.tileNote) ? `: ${game.tileNote}` : ''}`);
+      const icon = el('img', 'game-tile-icon');
       icon.src = game.icon;
       icon.alt = '';
-      icon.width = featured ? 88 : 56;
-      icon.height = featured ? 88 : 56;
+      icon.width = 48;
+      icon.height = 48;
       icon.loading = 'lazy';
-      const name = el('h3', 'game-name', game.name);
-      name.id = `game-${game.id}`;
-      const text = el('div', 'game-text');
-      text.append(name, el('p', 'game-tagline', game.tagline), el('p', 'game-description', game.description));
-      card.append(icon, text);
-
-      if (playable) {
-        text.append(el('p', 'game-note', game.soloNote));
-        const actions = el('div', 'game-actions');
-        const play = el('button', 'btn btn-solid', `${games.playLabel} ${game.playName || game.name}`);
-        play.type = 'button';
-        play.addEventListener('click', () => openCabinet(game, games));
-        const newTab = el('a', 'btn btn-outline', games.newTabLabel);
-        newTab.href = game.playUrl;
-        newTab.target = '_blank';
-        newTab.rel = 'noopener';
-        newTab.setAttribute('aria-label', `${games.newTabLabel}: ${game.playName || game.name}`);
-        actions.append(play, newTab);
-        text.append(actions);
-      } else {
-        text.append(el('p', 'game-note', games.partyOnlyLabel));
-      }
-      grid.append(card);
+      tile.append(icon, el('span', 'game-tile-name', name));
+      if (isFilled(game.tileNote)) tile.append(el('span', 'game-tile-note', game.tileNote));
+      tile.append(el('span', 'game-tile-play', games.playLabel));
+      tile.addEventListener('click', () => openCabinet(game, games));
+      li.append(tile);
+      row.append(li);
     });
-    inner.append(grid);
+    inner.append(row);
     mount.append(section);
   }
 
@@ -785,8 +766,8 @@
       renderAbout(mount, site.about);
       renderProjects(mount, site, publishedProjects(content));
       renderTrack(mount, site.timelineSection, content.timeline);
-      renderGames(mount, site.games);
       renderOffTheClock(mount, site.offTheClock);
+      renderGames(mount, site.games);
       renderContact(mount, site.contact, site.education);
       renderFooter(site);
       observeSections();

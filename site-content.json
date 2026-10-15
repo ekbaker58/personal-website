@@ -130,11 +130,11 @@
       "title": "Projects",
       "intro": "What I've built and what I'm building now. Each one has its own page.",
       "readMoreLabel": "Read more",
-    "prevLabel": "Previous projects",
-    "nextLabel": "Next projects",
-    "photoPrevLabel": "Previous photo",
-    "photoNextLabel": "Next photo",
-    "photoCountLabel": "Photo {n} of {total}",
+      "prevLabel": "Previous projects",
+      "nextLabel": "Next projects",
+      "photoPrevLabel": "Previous photo",
+      "photoNextLabel": "Next photo",
+      "photoCountLabel": "Photo {n} of {total}",
       "backLabel": "All projects",
       "factsTitle": "At a glance",
       "resultsTitle": "Results",
@@ -201,7 +201,7 @@
     "games": {
       "heading": "Games",
       "title": "Games I built",
-      "intro": "Five party games for game night. A laptop runs them, a TV shows the big screen, and everyone plays on their own phone. Each one also has a version you can play right here: solo, against the computer, or passing one device around.",
+      "intro": "Five party games I built for game night, where a laptop hosts and everyone plays on their phone. Each one has a version you can play right here.",
       "steps": [
         {
           "title": "The laptop hosts",
@@ -224,6 +224,7 @@
         {
           "id": "flappy-flock",
           "name": "Flappy Flock",
+          "tileNote": "Flappy Bird-style, solo",
           "tagline": "Flappy Bird for a room full of phones.",
           "description": "Everyone shares one leaderboard, earns coins for 21 skins, and can race on the same pipes. The server replays every flight from the taps alone, so nobody can fake a score.",
           "icon": "games/flappy-flock/icon.svg",
@@ -235,6 +236,7 @@
         {
           "id": "plinko-32",
           "name": "Plinko 32",
+          "tileNote": "Plinko with play money",
           "tagline": "32 buckets, odds tilted toward the player.",
           "description": "Pick a risk level, set a bet, and drop. It has auto-drop strategies, trophies, ball skins, and at game night a shared leaderboard with chat.",
           "icon": "games/plinko-32/icon.svg",
@@ -246,6 +248,7 @@
         {
           "id": "game-night-hub",
           "name": "Game Night Hub",
+          "tileNote": "Against 1 to 5 computer players",
           "tagline": "One profile and one coin wallet for every game.",
           "description": "Starts all the games with one command, keeps a leaderboard for the whole night, runs side bets, and has Texas Hold'em with a TV poker table.",
           "icon": "games/game-night-hub/icon.svg",
@@ -258,6 +261,7 @@
         {
           "id": "brain-brawl",
           "name": "Brain Brawl",
+          "tileNote": "Solo trivia against the clock",
           "tagline": "Party trivia for 6 to 10 friends.",
           "description": "Trivia, Fibber (fool your friends with a fake answer), Most Likely To, a buzzer Speed Round and a Final Wager.",
           "icon": "games/brain-brawl/icon.svg",
@@ -269,6 +273,7 @@
         {
           "id": "doodle-telephone",
           "name": "Doodle Telephone",
+          "tileNote": "Draw and guess, passing one device around",
           "tagline": "Write it, draw it, guess it.",
           "description": "Each idea passes from phone to phone. At the end the TV replays every chain stroke by stroke so the room can watch it fall apart.",
           "icon": "games/doodle-telephone/icon.svg",
@@ -571,13 +576,13 @@
           "src": "images/projects/flower-cart/rebuilt-top.jpg",
           "alt": "The cart in a garage with its rebuilt top: two round white posts holding a white header over the black counter, four black flower buckets tied with white bows, and a round floral sign on the front panel.",
           "caption": "After I rebuilt the top: white posts and a white header.",
-      "fit": "contain"
+          "fit": "contain"
         },
         {
           "src": "images/projects/flower-cart/finished.jpg",
           "alt": "The finished flower cart in a driveway: a white wooden cabinet on a steel base, a wagon wheel on the side, gold posts and a pink and white striped canopy.",
           "caption": "The cart as I first finished it in May 2025, with gold posts and a striped canopy.",
-      "position": "50% 20%"
+          "position": "50% 20%"
         },
         {
           "src": "images/projects/flower-cart/grinder.jpg",
