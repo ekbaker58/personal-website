@@ -163,6 +163,137 @@
     return (site.timelineSection.statusLabels || {})[status] || status;
   }
 
+  // Small line icons, drawn here so the site needs no icon files: 24 x 24, stroked in the text color.
+  const ICONS = {
+    email: ['M5 5.5h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2z', 'M3.6 7.2l8.4 6 8.4-6'],
+    resume: ['M14 2.75H7.5a2 2 0 0 0-2 2v14.5a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V7.25z', 'M14 2.75v4.5h4.5', 'M8.75 12h6.5', 'M8.75 15h6.5', 'M8.75 18h4'],
+    prev: ['M14.5 5.5L8 12l6.5 6.5'],
+    next: ['M9.5 5.5L16 12l-6.5 6.5'],
+  };
+  function icon(name) {
+    const node = svg('svg', {
+      class: 'icon', viewBox: '0 0 24 24', width: '24', height: '24', fill: 'none', stroke: 'currentColor',
+      'stroke-width': '2', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true', focusable: 'false',
+    });
+    ICONS[name].forEach(d => node.append(svg('path', { d })));
+    return node;
+  }
+
+  // Email and the résumé show a symbol instead of words; the words stay as the button's name for screen readers
+  // and as the tooltip on hover. Other links (LinkedIn) keep their text.
+  function contactButton(link, label, root, className) {
+    const name = link.href.startsWith('mailto:') ? 'email' : /\.pdf$/i.test(link.href) ? 'resume' : null;
+    const a = el('a', `btn ${className}${name ? ' btn-icon' : ''}`, name ? null : label);
+    a.href = resolveHref(link.href, root);
+    if (name) {
+      a.append(icon(name));
+      a.setAttribute('aria-label', label);
+      a.title = label;
+    }
+    if (isExternal(link.href)) { a.target = '_blank'; a.rel = 'noopener'; }
+    return a;
+  }
+
+  function showCoverPhoto(cover, img, photo, root) {
+    img.src = resolveHref(photo.src, root);
+    img.style.objectPosition = '';
+    applyPosition(img, photo);
+    // "fit": "contain" shows the whole photo on the card instead of cropping it (good for tall product shots).
+    cover.classList.toggle('is-contain', photo.fit === 'contain');
+  }
+
+  // Arrows on a card's cover flip through all of that project's photos without leaving the page.
+  // They sit above the card's link, so tapping one changes the photo instead of opening the project.
+  function addCoverArrows(cover, img, photos, project, site, root) {
+    const cfg = site.projectsSection;
+    let index = 0;
+    const count = el('span', 'card-photo-count');
+    count.setAttribute('aria-hidden', 'true');
+    const status = el('span', 'sr-only');
+    status.setAttribute('aria-live', 'polite');
+    const preload = i => { const pic = new Image(); pic.src = resolveHref(photos[i].src, root); return pic; };
+    const setCount = () => { count.textContent = `${index + 1} / ${photos.length}`; };
+    const go = step => {
+      index = (index + step + photos.length) % photos.length;
+      const target = index;
+      setCount();
+      status.textContent = cfg.photoCountLabel.replace('{n}', index + 1).replace('{total}', photos.length);
+      const pic = preload(target);
+      // swap once the next photo is ready, so the card never flashes empty
+      (pic.decode ? pic.decode() : Promise.resolve()).catch(() => {}).then(() => {
+        if (target !== index) return;
+        showCoverPhoto(cover, img, photos[target], root);
+        img.alt = photos[target].alt;
+      });
+      preload((index + step + photos.length) % photos.length);
+    };
+    [['prev', -1, cfg.photoPrevLabel], ['next', 1, cfg.photoNextLabel]].forEach(([name, step, label]) => {
+      const button = el('button', `card-photo-btn card-photo-${name}`);
+      button.type = 'button';
+      button.setAttribute('aria-label', `${label}: ${project.title}`);
+      button.append(icon(name));
+      button.addEventListener('click', () => go(step));
+      cover.append(button);
+    });
+    // get the second photo ready as soon as someone shows interest in the card
+    cover.addEventListener('pointerenter', () => preload(1), { once: true });
+    setCount();
+    cover.append(count, status);
+  }
+
+  // Project cards in one sideways row: swipe on a phone, or use the arrows. It saves a long scroll down the page.
+  let sliderCount = 0;
+  function renderProjectSlider(projects, site, root, headingTag) {
+    const cfg = site.projectsSection;
+    const slider = el('div', 'project-slider');
+    const rail = el('div', 'project-rail');
+    rail.id = `project-rail-${++sliderCount}`;
+    projects.forEach(project => rail.append(renderProjectCard(project, site, root, headingTag)));
+
+    const bar = el('div', 'slider-bar');
+    const dots = el('div', 'slider-dots');
+    dots.setAttribute('aria-hidden', 'true');
+    projects.forEach(() => dots.append(el('span')));
+    const arrows = el('div', 'slider-arrows');
+    const buttons = [['prev', -1, cfg.prevLabel], ['next', 1, cfg.nextLabel]].map(([name, direction, label]) => {
+      const button = el('button', 'slider-btn');
+      button.type = 'button';
+      button.setAttribute('aria-label', label);
+      button.setAttribute('aria-controls', rail.id);
+      button.append(icon(name));
+      button.addEventListener('click', () => {
+        const card = rail.firstElementChild;
+        const gap = parseFloat(getComputedStyle(rail).columnGap) || 0;
+        const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        rail.scrollBy({ left: direction * (card.getBoundingClientRect().width + gap), behavior: smooth ? 'smooth' : 'auto' });
+      });
+      arrows.append(button);
+      return button;
+    });
+    bar.append(dots, arrows);
+
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const max = rail.scrollWidth - rail.clientWidth;
+      slider.classList.toggle('is-static', max <= 2);        // everything fits: no arrows needed
+      buttons[0].disabled = rail.scrollLeft <= 2;
+      buttons[1].disabled = rail.scrollLeft >= max - 2;
+      const box = rail.getBoundingClientRect();
+      [...rail.children].forEach((card, i) => {
+        const c = card.getBoundingClientRect();
+        dots.children[i].classList.toggle('is-on', c.left >= box.left - c.width * 0.4 && c.right <= box.right + c.width * 0.4);
+      });
+    };
+    const queue = () => { if (!frame) frame = requestAnimationFrame(update); };
+    rail.addEventListener('scroll', queue, { passive: true });
+    window.addEventListener('resize', queue);
+    requestAnimationFrame(update);
+
+    slider.append(bar, rail);
+    return slider;
+  }
+
   // The card used in the Projects section and under "More projects".
   function renderProjectCard(project, site, root, headingTag = 'h3') {
     const card = el('article', `project-card ${categoryClass(project.category)}`);
@@ -170,17 +301,15 @@
     card.setAttribute('aria-labelledby', headingId);
 
     const cover = el('div', 'project-card-cover');
-    const photo = usablePhotos(project)[0];
-    if (photo) {
+    const photos = usablePhotos(project);
+    if (photos.length) {
       const img = el('img');
-      img.src = resolveHref(photo.src, root);
       img.alt = '';
       img.loading = 'lazy';
       img.decoding = 'async';
-      applyPosition(img, photo);
-      // "fit": "contain" shows the whole photo on the card instead of cropping it (good for tall product shots).
-      if (photo.fit === 'contain') cover.classList.add('is-contain');
+      showCoverPhoto(cover, img, photos[0], root);
       cover.append(img);
+      if (photos.length > 1) addCoverArrows(cover, img, photos, project, site, root);
     } else {
       // No photo yet: show the project's headline result (if it has one) over the livery stripes.
       cover.classList.add('is-blank');
@@ -222,12 +351,7 @@
     const links = contact.links.filter(link => isSafeHref(link.href));
     if (links.length) {
       const row = el('div', 'contact-links');
-      links.forEach((link, index) => {
-        const a = el('a', index === 0 ? 'btn btn-solid' : 'btn btn-outline', link.label);
-        a.href = resolveHref(link.href, root);
-        if (isExternal(link.href)) { a.target = '_blank'; a.rel = 'noopener'; }
-        row.append(a);
-      });
+      links.forEach((link, index) => row.append(contactButton(link, link.label, root, index === 0 ? 'btn-solid' : 'btn-outline')));
       panel.append(row);
     }
     // The address in plain text too, for anyone whose computer has no email app set up.
@@ -304,6 +428,6 @@
   window.EB = Object.freeze({
     el, svg, isFilled, isSafeHref, isPhotoPath, isVideoPath, renderMedia, categoryClass, resolveHref, isExternal,
     setupTheme, setupEmailCopy, renderNavigation, publishedProjects, projectHref, usablePhotos, statusLabel,
-    renderProjectCard, renderContactPanel, renderFooter, renderLoadError, loadContent
+    renderProjectCard, renderProjectSlider, contactButton, renderContactPanel, renderFooter, renderLoadError, loadContent
   });
 })();

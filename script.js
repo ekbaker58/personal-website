@@ -9,8 +9,8 @@
   'use strict';
 
   const {
-    el, svg, isFilled, isSafeHref, categoryClass, isExternal, setupTheme, setupEmailCopy, renderNavigation,
-    publishedProjects, renderProjectCard, renderContactPanel, renderFooter: renderSharedFooter, usablePhotos, renderMedia,
+    el, svg, isFilled, isSafeHref, categoryClass, setupTheme, setupEmailCopy, renderNavigation,
+    publishedProjects, renderProjectSlider, contactButton, renderContactPanel, renderFooter: renderSharedFooter, usablePhotos, renderMedia,
     renderLoadError, loadContent
   } = window.EB;
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -85,10 +85,7 @@
     const actions = el('div', 'hero-actions');
     [[linkedin, connect.linkedinLabel], [email, connect.emailLabel], [resume, connect.resumeLabel]].forEach(([link, label]) => {
       if (!link || !isFilled(label)) return;
-      const button = el('a', actions.childElementCount ? 'btn btn-outline' : 'btn btn-solid', label);
-      button.href = link.href;
-      if (isExternal(link.href)) { button.target = '_blank'; button.rel = 'noopener'; }
-      actions.append(button);
+      actions.append(contactButton(link, label, '', actions.childElementCount ? 'btn-outline' : 'btn-solid'));
     });
     if (actions.childElementCount) copy.append(actions);
 
@@ -160,9 +157,7 @@
     const cfg = site.projectsSection;
     const { section, inner } = sectionShell('projects', cfg.title, 'projects');
     if (isFilled(cfg.intro)) inner.append(el('p', 'section-intro', cfg.intro));
-    const grid = el('div', 'project-grid');
-    projects.forEach(project => grid.append(renderProjectCard(project, site, '')));
-    inner.append(grid);
+    inner.append(renderProjectSlider(projects, site, ''));
     mount.append(section);
   }
 

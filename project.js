@@ -9,7 +9,7 @@
 
   const {
     el, isFilled, categoryClass, resolveHref, renderMedia, setupTheme, setupEmailCopy, renderNavigation, publishedProjects,
-    projectHref, usablePhotos, statusLabel, renderProjectCard, renderContactPanel, renderFooter,
+    projectHref, usablePhotos, statusLabel, renderProjectSlider, renderContactPanel, renderFooter,
     renderLoadError, loadContent
   } = window.EB;
 
@@ -121,9 +121,7 @@
       more.setAttribute('aria-labelledby', 'project-more-title');
       const title = el('h2', 'project-section-title', cfg.moreTitle);
       title.id = 'project-more-title';
-      const grid3 = el('div', 'project-grid');
-      others.forEach(other => grid3.append(renderProjectCard(other, site, ROOT)));
-      more.append(title, grid3);
+      more.append(title, renderProjectSlider(others, site, ROOT));
       body.append(more);
     }
 
